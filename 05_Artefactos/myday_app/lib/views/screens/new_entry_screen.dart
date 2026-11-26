@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/diary_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../models/enums.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_exception.dart';
+import '../../utils/app_images.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/messages.dart';
 import '../../utils/validators.dart';
 import '../widgets/app_background.dart';
 import '../widgets/app_text_field.dart';
+import '../widgets/choice_tabs.dart';
 import '../widgets/gradient_button.dart';
+import '../widgets/round_icon_button.dart';
 
 class NewEntryScreen extends StatefulWidget {
-  const NewEntryScreen({super.key, required this.diaryController});
+  const NewEntryScreen({super.key, required this.diaryController, required this.settingsController});
 
   final DiaryController diaryController;
+  final SettingsController settingsController;
 
   @override
   State<NewEntryScreen> createState() => _NewEntryScreenState();
 }
 
 class _NewEntryScreenState extends State<NewEntryScreen> {
-  static const String _defaultLocation = 'Biblioteca IADE';
-
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _textController = TextEditingController();
@@ -30,8 +34,11 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
   Subject _subject = Subject.mathematics;
   late String _project = widget.diaryController.projectNames.first;
   EntryVisibility _visibility = EntryVisibility.private;
-  AttachmentType? _attachment;
-  bool _addLocation = false;
+  AutovalidateMode _autovalidate = AutovalidateMode.disabled;
+  AttachmentType? _media;
+  String? _imagePath;
+  String? _location;
+  bool _isLocating = false;
 
   @override
   void dispose() {
@@ -41,14 +48,51 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
     super.dispose();
   }
 
-  void _selectAttachment(AttachmentType type) {
-    setState(() {
-      if (type == AttachmentType.location) {
-        _addLocation = !_addLocation;
-      } else {
-        _attachment = _attachment == type ? null : type;
-      }
-    });
+  Future<void> _selectAttachment(AttachmentType type) async {
+    switch (type) {
+      case AttachmentType.photo:
+        await _choosePhoto();
+      case AttachmentType.location:
+        await _toggleLocation();
+      case AttachmentType.video:
+      case AttachmentType.audio:
+        setState(() => _media = _media == type ? null : type);
+    }
+  }
+
+  Future<void> _choosePhoto() async {
+    final path = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      builder: (_) => _PhotoPicker(selected: _imagePath),
+    );
+    if (path != null) setState(() => _imagePath = path);
+  }
+
+  Future<void> _toggleLocation() async {
+    if (_location != null) {
+      setState(() => _location = null);
+      return;
+    }
+    if (!widget.settingsController.locationEnabled) {
+      await showAlert(
+        context,
+        title: 'Localização desligada',
+        message: 'Ativa a localização no Perfil, em Privacidade e permissões, para juntar o local ao registo.',
+      );
+      return;
+    }
+
+    setState(() => _isLocating = true);
+    try {
+      final location = await widget.diaryController.currentLocation();
+      if (mounted) setState(() => _location = location);
+    } on AppException catch (error) {
+      if (mounted) await showErrorAlert(context, error);
+    } finally {
+      if (mounted) setState(() => _isLocating = false);
+    }
   }
 
   List<String> _parseTags() {
@@ -60,7 +104,11 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
   }
 
   void _save() {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _autovalidate = AutovalidateMode.onUserInteraction);
+      showInvalidFormAlert(context);
+      return;
+    }
 
     final entry = widget.diaryController.addEntry(
       title: _titleController.text,
@@ -69,8 +117,9 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
       project: _project,
       visibility: _visibility,
       tags: _parseTags(),
-      location: _addLocation ? _defaultLocation : null,
-      mediaType: _attachment,
+      location: _location,
+      imagePath: _imagePath,
+      mediaType: _media,
     );
     showMessage(context, 'Registo guardado.');
     Navigator.pushReplacementNamed(context, AppRoutes.entryDetail, arguments: entry);
@@ -83,10 +132,11 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              _TopBar(onCancel: () => Navigator.pop(context), onSave: _save),
+              _TopBar(onBack: () => Navigator.maybePop(context), onSave: _save),
               Expanded(
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: _autovalidate,
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
                     children: [
@@ -94,6 +144,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                         label: 'Título',
                         hint: 'Ex.: Derivadas: regra da cadeia',
                         controller: _titleController,
+                        isRequired: true,
                         textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white),
                         validator: (value) => Validators.requiredField(value, 'Dá um título ao registo'),
                       ),
@@ -103,18 +154,29 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                         hint: 'Escreve o que percebeste, as dúvidas ou o próximo passo.',
                         controller: _textController,
                         maxLines: 4,
+                        isRequired: true,
+                        validator: (value) => Validators.requiredField(value, 'Escreve o que aprendeste'),
                       ),
                       const SizedBox(height: 16),
                       _AttachmentButtons(
                         selected: {
-                          if (_attachment != null) _attachment!,
-                          if (_addLocation) AttachmentType.location,
+                          if (_imagePath != null) AttachmentType.photo,
+                          if (_media != null) _media!,
+                          if (_location != null) AttachmentType.location,
                         },
+                        loading: _isLocating ? AttachmentType.location : null,
                         onTap: _selectAttachment,
                       ),
+                      if (_imagePath != null) ...[
+                        const SizedBox(height: 12),
+                        _PhotoPreview(
+                          imagePath: _imagePath!,
+                          onRemove: () => setState(() => _imagePath = null),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       _OptionsCard(
-                        location: _addLocation ? _defaultLocation : 'Sem local',
+                        location: _isLocating ? 'A obter posição…' : _location ?? 'Sem local',
                         subject: _subject,
                         project: _project,
                         projects: widget.diaryController.projectNames,
@@ -146,24 +208,21 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onCancel, required this.onSave});
+  const _TopBar({required this.onBack, required this.onSave});
 
-  final VoidCallback onCancel;
+  final VoidCallback onBack;
   final VoidCallback onSave;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 8, 20, 12),
+      padding: const EdgeInsets.fromLTRB(16, 8, 20, 12),
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: AppColors.surfaceBorder)),
       ),
       child: Row(
         children: [
-          TextButton(
-            onPressed: onCancel,
-            child: const Text('Cancelar', style: TextStyle(fontSize: 15, color: AppColors.textMuted)),
-          ),
+          RoundIconButton(icon: Icons.arrow_back_rounded, tooltip: 'Voltar', onPressed: onBack),
           const Expanded(
             child: Text(
               'Novo registo',
@@ -179,9 +238,10 @@ class _TopBar extends StatelessWidget {
 }
 
 class _AttachmentButtons extends StatelessWidget {
-  const _AttachmentButtons({required this.selected, required this.onTap});
+  const _AttachmentButtons({required this.selected, required this.onTap, this.loading});
 
   final Set<AttachmentType> selected;
+  final AttachmentType? loading;
   final ValueChanged<AttachmentType> onTap;
 
   static const Map<AttachmentType, IconData> _icons = {
@@ -201,6 +261,7 @@ class _AttachmentButtons extends StatelessWidget {
               label: type.label,
               icon: _icons[type]!,
               isSelected: selected.contains(type),
+              isLoading: loading == type,
               onTap: () => onTap(type),
             ),
           ),
@@ -216,12 +277,14 @@ class _AttachmentButton extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.isSelected,
+    required this.isLoading,
     required this.onTap,
   });
 
   final String label;
   final IconData icon;
   final bool isSelected;
+  final bool isLoading;
   final VoidCallback onTap;
 
   @override
@@ -236,17 +299,109 @@ class _AttachmentButton extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
+        onTap: isLoading ? null : onTap,
         child: SizedBox(
           height: 72,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 22, color: color),
+              if (isLoading)
+                const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2))
+              else
+                Icon(icon, size: 22, color: color),
               const SizedBox(height: 6),
               Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PhotoPreview extends StatelessWidget {
+  const _PhotoPreview({required this.imagePath, required this.onRemove});
+
+  final String imagePath;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Stack(
+        children: [
+          Image.asset(imagePath, height: 150, width: double.infinity, fit: BoxFit.cover),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: RoundIconButton(icon: Icons.close_rounded, tooltip: 'Remover fotografia', onPressed: onRemove),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Folha para escolher a fotografia do registo, organizada por categoria.
+class _PhotoPicker extends StatefulWidget {
+  const _PhotoPicker({this.selected});
+
+  final String? selected;
+
+  @override
+  State<_PhotoPicker> createState() => _PhotoPickerState();
+}
+
+class _PhotoPickerState extends State<_PhotoPicker> {
+  ImageCategory _category = ImageCategory.values.first;
+
+  @override
+  Widget build(BuildContext context) {
+    final images = AppImages.byCategory[_category] ?? const [];
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Escolher fotografia', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 14),
+            ChoiceTabs<ImageCategory>(
+              options: ImageCategory.values,
+              selected: _category,
+              labelOf: (category) => category.label,
+              onSelected: (category) => setState(() => _category = category),
+            ),
+            const SizedBox(height: 14),
+            GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 1.3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                for (final path in images)
+                  InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => Navigator.pop(context, path),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: path == widget.selected ? AppColors.primaryLight : Colors.transparent,
+                          width: 2,
+                        ),
+                        image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ),
       ),
     );

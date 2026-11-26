@@ -5,12 +5,15 @@ import '../models/entry.dart';
 import '../models/enums.dart';
 import '../models/user.dart';
 import '../services/data_service.dart';
+import '../services/location_service.dart';
+import '../utils/app_images.dart';
 import '../utils/date_formatter.dart';
 
 class DiaryController extends ChangeNotifier {
-  DiaryController(this._dataService);
+  DiaryController(this._dataService, this._locationService);
 
   final DataService _dataService;
+  final LocationService _locationService;
 
   List<Entry> get entries => _dataService.entries;
 
@@ -46,6 +49,7 @@ class DiaryController extends ChangeNotifier {
     required EntryVisibility visibility,
     required List<String> tags,
     String? location,
+    String? imagePath,
     AttachmentType? mediaType,
   }) {
     final entry = Entry(
@@ -57,6 +61,7 @@ class DiaryController extends ChangeNotifier {
       createdAt: DateTime.now(),
       visibility: visibility,
       location: location,
+      imagePath: imagePath ?? AppImages.forSubject(subject),
       mediaType: mediaType,
       mediaLabel: mediaType?.label,
       tags: tags,
@@ -64,6 +69,12 @@ class DiaryController extends ChangeNotifier {
     _dataService.addEntry(entry);
     notifyListeners();
     return entry;
+  }
+
+  /// Coordenadas atuais do GPS, em texto, para guardar no registo.
+  Future<String> currentLocation() async {
+    final position = await _locationService.currentPosition();
+    return '${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}';
   }
 
   void toggleFavorite(Entry entry) {

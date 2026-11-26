@@ -7,14 +7,18 @@ import 'controllers/project_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'models/entry.dart';
 import 'services/data_service.dart';
+import 'services/location_service.dart';
+import 'services/verification_service.dart';
 import 'utils/app_routes.dart';
 import 'utils/app_theme.dart';
 import 'views/screens/entry_detail_screen.dart';
+import 'views/screens/forgot_password_screen.dart';
 import 'views/screens/login_screen.dart';
 import 'views/screens/main_screen.dart';
 import 'views/screens/new_entry_screen.dart';
 import 'views/screens/signup_screen.dart';
 import 'views/screens/splash_screen.dart';
+import 'views/screens/verify_code_screen.dart';
 import 'views/screens/welcome_screen.dart';
 
 class MyDayApp extends StatefulWidget {
@@ -27,8 +31,8 @@ class MyDayApp extends StatefulWidget {
 class _MyDayAppState extends State<MyDayApp> {
   final DataService _dataService = DataService();
 
-  late final AuthController _authController = AuthController(_dataService);
-  late final DiaryController _diaryController = DiaryController(_dataService);
+  late final AuthController _authController = AuthController(_dataService, VerificationService());
+  late final DiaryController _diaryController = DiaryController(_dataService, LocationService());
   late final ProjectController _projectController = ProjectController(_dataService);
   late final CommunityController _communityController = CommunityController(_dataService);
   final SettingsController _settingsController = SettingsController();
@@ -59,6 +63,8 @@ class _MyDayAppState extends State<MyDayApp> {
       AppRoutes.welcome => const WelcomeScreen(),
       AppRoutes.login => LoginScreen(authController: _authController),
       AppRoutes.signup => SignupScreen(authController: _authController),
+      AppRoutes.verifyCode => VerifyCodeScreen(authController: _authController),
+      AppRoutes.forgotPassword => ForgotPasswordScreen(authController: _authController),
       AppRoutes.home => MainScreen(
           initialTab: settings.arguments as int? ?? 0,
           authController: _authController,
@@ -67,7 +73,10 @@ class _MyDayAppState extends State<MyDayApp> {
           communityController: _communityController,
           settingsController: _settingsController,
         ),
-      AppRoutes.newEntry => NewEntryScreen(diaryController: _diaryController),
+      AppRoutes.newEntry => NewEntryScreen(
+          diaryController: _diaryController,
+          settingsController: _settingsController,
+        ),
       AppRoutes.entryDetail => EntryDetailScreen(
           entry: settings.arguments! as Entry,
           diaryController: _diaryController,

@@ -29,6 +29,7 @@ Cada controlador estende `ChangeNotifier` e chama `notifyListeners()` quando o e
 | `DiaryController` | registos de hoje e de ontem, estatísticas da semana, criar registo, localização atual, favoritos e comentários |
 | `ProjectController` | lista de projetos, filtro por visibilidade e grupos de estudo |
 | `CommunityController` | feed escolhido, pesquisa, favoritos e desafio da semana |
+| `MessageController` | conversas, mensagens por ler, enviar e marcar como lidas |
 | `SettingsController` | permissões de localização e microfone, lembretes |
 
 As operações que podem falhar lançam uma `AppException`; o ecrã apanha-a e decide como a mostrar.

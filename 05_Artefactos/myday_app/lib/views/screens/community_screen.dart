@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/community_controller.dart';
+import '../../controllers/message_controller.dart';
 import '../../models/enums.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_images.dart';
@@ -15,11 +16,15 @@ class CommunityScreen extends StatelessWidget {
     required this.communityController,
     required this.onBack,
     required this.onParticipate,
+    required this.messageController,
+    required this.onOpenMessages,
   });
 
   final CommunityController communityController;
   final VoidCallback onBack;
   final VoidCallback onParticipate;
+  final MessageController messageController;
+  final VoidCallback onOpenMessages;
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +43,15 @@ class CommunityScreen extends StatelessWidget {
                 Image.asset(AppImages.logoIcon, height: 30),
                 const SizedBox(width: 10),
                 Expanded(child: Text('Comunidade', style: Theme.of(context).textTheme.headlineMedium)),
-                RoundIconButton(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  tooltip: 'Mensagens',
-                  onPressed: () => showNotAvailable(context, 'O ecrã de mensagens'),
+                // O ponto azul aparece quando há mensagens por ler.
+                ListenableBuilder(
+                  listenable: messageController,
+                  builder: (context, _) => RoundIconButton(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    tooltip: 'Mensagens',
+                    showBadge: messageController.unreadCount > 0,
+                    onPressed: onOpenMessages,
+                  ),
                 ),
               ],
             ),

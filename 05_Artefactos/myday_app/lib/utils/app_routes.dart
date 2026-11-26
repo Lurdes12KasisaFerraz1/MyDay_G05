@@ -13,4 +13,6 @@ class AppRoutes {
   static const String projectDetail = '/project';
   static const String map = '/map';
   static const String calendar = '/calendar';
+  static const String messages = '/messages';
+  static const String chat = '/chat';
 }

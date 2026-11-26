@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/community_controller.dart';
 import '../../controllers/diary_controller.dart';
+import '../../controllers/message_controller.dart';
 import '../../controllers/project_controller.dart';
 import '../../controllers/settings_controller.dart';
 import '../../utils/app_routes.dart';
@@ -23,6 +24,7 @@ class MainScreen extends StatefulWidget {
     required this.diaryController,
     required this.projectController,
     required this.communityController,
+    required this.messageController,
     required this.settingsController,
   });
 
@@ -31,6 +33,7 @@ class MainScreen extends StatefulWidget {
   final DiaryController diaryController;
   final ProjectController projectController;
   final CommunityController communityController;
+  final MessageController messageController;
   final SettingsController settingsController;
 
   @override
@@ -46,6 +49,12 @@ class _MainScreenState extends State<MainScreen> {
     final hasAccount = await ensureAccount(context, widget.authController, 'guardar registos');
     if (!hasAccount || !mounted) return;
     Navigator.pushNamed(context, AppRoutes.newEntry);
+  }
+
+  Future<void> _openMessages() async {
+    final hasAccount = await ensureAccount(context, widget.authController, 'enviar mensagens');
+    if (!hasAccount || !mounted) return;
+    Navigator.pushNamed(context, AppRoutes.messages);
   }
 
   void _backToDiary() => setState(() => _currentTab = _diaryTab);
@@ -79,6 +88,8 @@ class _MainScreenState extends State<MainScreen> {
                 communityController: widget.communityController,
                 onBack: _backToDiary,
                 onParticipate: _openNewEntry,
+                messageController: widget.messageController,
+                onOpenMessages: _openMessages,
               ),
               ProfileScreen(
                 authController: widget.authController,

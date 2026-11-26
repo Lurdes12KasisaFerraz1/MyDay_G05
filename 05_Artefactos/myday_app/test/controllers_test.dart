@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myday_app/controllers/auth_controller.dart';
 import 'package:myday_app/controllers/diary_controller.dart';
+import 'package:myday_app/controllers/message_controller.dart';
 import 'package:myday_app/controllers/project_controller.dart';
 import 'package:myday_app/models/enums.dart';
 import 'package:myday_app/services/data_service.dart';
@@ -177,6 +178,57 @@ void main() {
       expect(entries, isNotEmpty);
       expect(entries.every((entry) => entry.project == 'Cálculo I'), isTrue);
       expect(diary.projectNamed('Cálculo I'), isNotNull);
+    });
+  });
+
+  group('Mensagens', () {
+    MessageController loggedInAs(String email, String password) {
+      final dataService = DataService();
+      final auth = AuthController(dataService, VerificationService());
+      auth.startLogin(email, password);
+      auth.confirmCode(auth.pendingVerification!.demoCode);
+      return MessageController(dataService, auth);
+    }
+
+    test('mostra as conversas do utilizador, a mais recente primeiro', () {
+      final messages = loggedInAs(_email, _password);
+
+      final conversations = messages.conversations;
+
+      expect(conversations.first.contact.firstName, 'Ana');
+      expect(conversations.first.unread, 1);
+      expect(messages.unreadCount, 1);
+    });
+
+    test('abrir a conversa marca as mensagens como lidas', () {
+      final messages = loggedInAs(_email, _password);
+      final ana = messages.conversations.first.contact;
+
+      messages.markAsRead(ana);
+
+      expect(messages.unreadCount, 0);
+    });
+
+    test('enviar uma mensagem acrescenta-a à conversa', () {
+      final messages = loggedInAs(_email, _password);
+      final ana = messages.conversations.first.contact;
+      final before = messages.messagesWith(ana).length;
+
+      messages.send(ana, '  Claro, já partilhei!  ');
+
+      final conversation = messages.messagesWith(ana);
+      expect(conversation.length, before + 1);
+      expect(conversation.last.text, 'Claro, já partilhei!');
+    });
+
+    test('não envia mensagens vazias', () {
+      final messages = loggedInAs(_email, _password);
+      final ana = messages.conversations.first.contact;
+      final before = messages.messagesWith(ana).length;
+
+      messages.send(ana, '   ');
+
+      expect(messages.messagesWith(ana).length, before);
     });
   });
 

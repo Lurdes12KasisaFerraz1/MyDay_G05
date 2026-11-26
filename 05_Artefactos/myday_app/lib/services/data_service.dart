@@ -1,6 +1,7 @@
 import '../models/comment.dart';
 import '../models/entry.dart';
 import '../models/enums.dart';
+import '../models/message.dart';
 import '../models/post.dart';
 import '../models/project.dart';
 import '../models/user.dart';
@@ -21,12 +22,14 @@ class DataService {
   final List<Project> _projects = [];
   final List<StudyGroup> _groups = [];
   final List<Post> _posts = [];
+  final List<Message> _messages = [];
 
   List<User> get users => List.unmodifiable(_users);
   List<Entry> get entries => List.unmodifiable(_entries);
   List<Project> get projects => List.unmodifiable(_projects);
   List<StudyGroup> get groups => List.unmodifiable(_groups);
   List<Post> get posts => List.unmodifiable(_posts);
+  List<Message> get messages => List.unmodifiable(_messages);
 
   String get weeklyChallenge => 'Explica um conceito em 60 segundos de vídeo';
 
@@ -45,6 +48,10 @@ class DataService {
   void addUser(User user) => _users.add(user);
 
   void addEntry(Entry entry) => _entries.insert(0, entry);
+
+  void addMessage(Message message) => _messages.add(message);
+
+  String nextMessageId() => 'm${_messages.length + 1}';
 
   String nextEntryId() => 'e${_entries.length + 1}';
 
@@ -85,7 +92,24 @@ class DataService {
         avatarPath: AppImages.logoIcon,
         role: UserRole.admin,
       ),
+      User(
+        name: 'Inês Martins',
+        email: 'ines.martins@iade.pt',
+        password: 'myday2026',
+        phone: '914222333',
+        course: 'Design · IADE',
+        avatarPath: AppImages.avatarInes,
+      ),
+      User(
+        name: 'Tiago Fonseca',
+        email: 'tiago.fonseca@iade.pt',
+        password: 'myday2026',
+        phone: '915444555',
+        course: 'Eng. Informática · IADE',
+        avatarPath: AppImages.avatarTiago,
+      ),
     ]);
+    _messages.addAll(_sampleMessages(now));
 
     _entries.addAll([
       Entry(
@@ -257,6 +281,34 @@ class DataService {
           longitude: -9.15265 - i * 0.0005,
           imagePath: samples[i].$4,
         ),
+    ];
+  }
+
+  List<Message> _sampleMessages(DateTime now) {
+    final rodrigo = _users[0];
+    final ana = _users[1];
+    final ines = _users[3];
+    final tiago = _users[4];
+
+    Message message(String id, User from, User to, String text, Duration ago, {bool read = true}) {
+      final sentAt = now.subtract(ago);
+      return Message(
+        id: id,
+        sender: from,
+        receiver: to,
+        text: text,
+        sentAt: sentAt,
+        readAt: read ? sentAt.add(const Duration(minutes: 2)) : null,
+      );
+    }
+
+    return [
+      message('m1', ana, rodrigo, 'Olá! Já fizeste a ficha de derivadas?', const Duration(hours: 3)),
+      message('m2', rodrigo, ana, 'Já! Usei a regra da cadeia em quase todas.', const Duration(hours: 2, minutes: 50)),
+      message('m3', ana, rodrigo, 'Podes partilhar o teu registo comigo?', const Duration(minutes: 40), read: false),
+      message('m4', tiago, rodrigo, 'Vamos rever SQL amanhã na biblioteca?', const Duration(days: 1, hours: 2)),
+      message('m5', rodrigo, tiago, 'Combinado, às 10h.', const Duration(days: 1, hours: 1)),
+      message('m6', ines, ana, 'Gostei muito do teu projeto de química!', const Duration(hours: 5)),
     ];
   }
 }

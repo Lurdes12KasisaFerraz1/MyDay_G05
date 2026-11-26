@@ -60,7 +60,7 @@ class _MyDayAppState extends State<MyDayApp> {
 
   Route<void> _onGenerateRoute(RouteSettings settings) {
     final Widget page = switch (settings.name) {
-      AppRoutes.welcome => const WelcomeScreen(),
+      AppRoutes.welcome => WelcomeScreen(authController: _authController),
       AppRoutes.login => LoginScreen(authController: _authController),
       AppRoutes.signup => SignupScreen(authController: _authController),
       AppRoutes.verifyCode => VerifyCodeScreen(authController: _authController),

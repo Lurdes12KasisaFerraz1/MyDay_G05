@@ -87,10 +87,16 @@ flutter analyze
 flutter test
 ```
 
-Contas de demonstração (palavra-passe `myday2026`):
+Contas de demonstração:
 
-- rodrigo@iade.pt
-- ana.lopes@iade.pt
+| Conta | Email | Palavra-passe |
+| --- | --- | --- |
+| Estudante | rodrigo@iade.pt | myday2026 |
+| Estudante | ana.lopes@iade.pt | myday2026 |
+| Administrador | admin@iade.pt | admin2026 |
+
+- **Convidado:** em *Explorar como convidado* (Boas-vindas) ou *Continuar como convidado* (Entrar). Pode ver a app, mas para guardar registos, comentar ou favoritar é convidado a criar conta.
+- **Administrador:** no Perfil aparece *Gestão de contas*, com a lista de contas e o botão *Desbloquear* para as que foram bloqueadas.
 
 Os dados ficam em memória, por isso voltam ao estado inicial sempre que a app é reiniciada.
 

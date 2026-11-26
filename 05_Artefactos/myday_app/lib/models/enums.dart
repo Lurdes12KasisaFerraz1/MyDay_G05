@@ -40,6 +40,16 @@ enum CommunityFeed {
   final String label;
 }
 
+enum UserRole {
+  student('Estudante'),
+  admin('Administrador'),
+  guest('Convidado');
+
+  const UserRole(this.label);
+
+  final String label;
+}
+
 enum VerificationChannel {
   email('email'),
   sms('SMS');

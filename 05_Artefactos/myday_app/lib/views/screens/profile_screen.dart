@@ -4,8 +4,10 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/settings_controller.dart';
 import '../../models/user.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_exception.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/messages.dart';
+import '../widgets/gradient_button.dart';
 import '../widgets/profile_qr_sheet.dart';
 import '../widgets/round_icon_button.dart';
 import '../widgets/section_header.dart';
@@ -55,6 +57,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = authController.currentUser;
     if (user == null) return const SizedBox.shrink();
+    if (user.isGuest) return _GuestProfile(onBack: onBack, onLeave: () => _logout(context));
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -67,6 +70,12 @@ class ProfileScreen extends StatelessWidget {
         _ProfileHeader(user: user),
         const SizedBox(height: 16),
         _StatsCard(user: user),
+        if (user.isAdmin) ...[
+          const SizedBox(height: 22),
+          const SectionHeader(title: 'Gestão de contas'),
+          const SizedBox(height: 12),
+          _AdminPanel(authController: authController),
+        ],
         const SizedBox(height: 22),
         const SectionHeader(title: 'Conquistas'),
         const SizedBox(height: 12),
@@ -122,6 +131,17 @@ class _ProfileHeader extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(user.course, style: Theme.of(context).textTheme.bodySmall),
+              if (user.isAdmin) ...[
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                  decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(999)),
+                  child: Text(
+                    user.role.label,
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF3D2800)),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -136,6 +156,114 @@ class _ProfileHeader extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _GuestProfile extends StatelessWidget {
+  const _GuestProfile({required this.onBack, required this.onLeave});
+
+  final VoidCallback onBack;
+  final VoidCallback onLeave;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: RoundIconButton(icon: Icons.arrow_back_rounded, tooltip: 'Voltar ao Diário', onPressed: onBack),
+        ),
+        const SizedBox(height: 40),
+        const CircleAvatar(
+          radius: 40,
+          backgroundColor: AppColors.glass,
+          child: Icon(Icons.person_outline_rounded, size: 40, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 16),
+        Text('Modo convidado', textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineMedium),
+        const SizedBox(height: 8),
+        const Text(
+          'Podes ver a comunidade e os projetos. Para guardar registos, comentar e ter perfil, cria uma conta.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 15, height: 1.45, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 24),
+        GradientButton(
+          label: 'Criar conta',
+          showArrow: true,
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.signup),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: TextButton(
+            onPressed: onLeave,
+            child: const Text(
+              'Sair do modo convidado',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Lista das contas, visível só para o administrador, com opção de desbloquear.
+class _AdminPanel extends StatelessWidget {
+  const _AdminPanel({required this.authController});
+
+  final AuthController authController;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: authController,
+      builder: (context, _) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.surfaceBorder),
+        ),
+        child: Column(
+          children: [
+            for (final user in authController.managedUsers)
+              ListTile(
+                leading: CircleAvatar(backgroundImage: AssetImage(user.avatarPath)),
+                title: Text(
+                  user.name,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+                ),
+                subtitle: Text(
+                  authController.isLocked(user) ? '${user.email} · bloqueada' : user.email,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: authController.isLocked(user) ? AppColors.error : AppColors.textMuted,
+                  ),
+                ),
+                trailing: authController.isLocked(user)
+                    ? TextButton(
+                        onPressed: () => _unlock(context, user),
+                        child: const Text(
+                          'Desbloquear',
+                          style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.link),
+                        ),
+                      )
+                    : const Icon(Icons.check_circle_outline_rounded, color: AppColors.success),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _unlock(BuildContext context, User user) {
+    try {
+      authController.unlockUser(user);
+      showMessage(context, 'A conta de ${user.firstName} foi desbloqueada.');
+    } on AppException catch (error) {
+      showErrorAlert(context, error);
+    }
   }
 }
 

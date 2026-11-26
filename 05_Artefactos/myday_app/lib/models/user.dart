@@ -1,3 +1,5 @@
+import 'enums.dart';
+
 class User {
   User({
     required this.name,
@@ -10,6 +12,7 @@ class User {
     this.followers = 0,
     this.following = 0,
     this.streakDays = 0,
+    this.role = UserRole.student,
   });
 
   final String name;
@@ -18,6 +21,7 @@ class User {
   final String phone;
   final String course;
   final String avatarPath;
+  final UserRole role;
   int entriesCount;
   int followers;
   int following;
@@ -27,4 +31,6 @@ class User {
   int failedLoginAttempts = 0;
 
   String get firstName => name.split(' ').first;
+  bool get isAdmin => role == UserRole.admin;
+  bool get isGuest => role == UserRole.guest;
 }

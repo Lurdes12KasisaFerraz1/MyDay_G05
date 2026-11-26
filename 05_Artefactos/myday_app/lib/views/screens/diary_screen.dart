@@ -39,11 +39,14 @@ class DiaryScreen extends StatelessWidget {
               avatarPath: user?.avatarPath,
             ),
             const SizedBox(height: 18),
-            StreakCard(
-              streakDays: user?.streakDays ?? 0,
-              entriesThisWeek: diaryController.entriesThisWeek,
-              weekActivity: diaryController.weekActivity,
-            ),
+            if (user?.isGuest ?? false)
+              const _GuestBanner()
+            else
+              StreakCard(
+                streakDays: user?.streakDays ?? 0,
+                entriesThisWeek: diaryController.entriesThisWeek,
+                weekActivity: diaryController.weekActivity,
+              ),
             const SizedBox(height: 16),
             const _ViewSelector(),
             const SizedBox(height: 20),
@@ -184,6 +187,53 @@ class _ViewOption extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Mostrado ao convidado no lugar da sequência de dias.
+class _GuestBanner extends StatelessWidget {
+  const _GuestBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: AppColors.primaryGlow,
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Estás a explorar como convidado',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Cria conta para guardar os teus registos.',
+                  style: TextStyle(fontSize: 13, color: Color(0xD9FFFFFF)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          FilledButton(
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.signup),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primary,
+              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+            ),
+            child: const Text('Criar conta'),
+          ),
+        ],
       ),
     );
   }

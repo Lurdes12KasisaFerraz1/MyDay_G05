@@ -4,17 +4,22 @@ import '../../controllers/community_controller.dart';
 import '../../models/enums.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_images.dart';
-import '../../utils/app_routes.dart';
 import '../../utils/messages.dart';
 import '../widgets/choice_tabs.dart';
 import '../widgets/post_card.dart';
 import '../widgets/round_icon_button.dart';
 
 class CommunityScreen extends StatelessWidget {
-  const CommunityScreen({super.key, required this.communityController, required this.onBack});
+  const CommunityScreen({
+    super.key,
+    required this.communityController,
+    required this.onBack,
+    required this.onParticipate,
+  });
 
   final CommunityController communityController;
   final VoidCallback onBack;
+  final VoidCallback onParticipate;
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +75,7 @@ class CommunityScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _ChallengeBanner(
               challenge: communityController.weeklyChallenge,
-              onParticipate: () => Navigator.pushNamed(context, AppRoutes.newEntry),
+              onParticipate: onParticipate,
             ),
             const SizedBox(height: 14),
             if (posts.isEmpty)

@@ -152,6 +152,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         action: 'Criar conta',
                         onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.signup),
                       ),
+                      Center(
+                        child: TextButton(
+                          onPressed: () {
+                            widget.authController.continueAsGuest();
+                            Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
+                          },
+                          child: const Text(
+                            'Continuar como convidado',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

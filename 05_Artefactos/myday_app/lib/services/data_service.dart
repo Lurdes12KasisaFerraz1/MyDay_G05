@@ -22,6 +22,7 @@ class DataService {
   final List<StudyGroup> _groups = [];
   final List<Post> _posts = [];
 
+  List<User> get users => List.unmodifiable(_users);
   List<Entry> get entries => List.unmodifiable(_entries);
   List<Project> get projects => List.unmodifiable(_projects);
   List<StudyGroup> get groups => List.unmodifiable(_groups);
@@ -76,6 +77,15 @@ class DataService {
         followers: 41,
         following: 38,
         streakDays: 7,
+      ),
+      User(
+        name: 'Admin MyDay',
+        email: 'admin@iade.pt',
+        password: 'admin2026',
+        phone: '910000000',
+        course: 'Administração · IADE',
+        avatarPath: AppImages.logoIcon,
+        role: UserRole.admin,
       ),
     ]);
 

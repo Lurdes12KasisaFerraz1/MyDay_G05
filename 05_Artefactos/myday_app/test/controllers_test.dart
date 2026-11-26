@@ -72,6 +72,40 @@ void main() {
     });
   });
 
+  group('Convidado e administrador', () {
+    test('o convidado entra sem conta e sem código', () {
+      final auth = _newAuth();
+
+      auth.continueAsGuest();
+
+      expect(auth.isGuest, isTrue);
+      expect(auth.pendingVerification, isNull);
+    });
+
+    test('o administrador desbloqueia uma conta bloqueada', () {
+      final auth = _newAuth();
+      for (var attempt = 0; attempt < AuthController.maxLoginAttempts; attempt++) {
+        expect(() => auth.startLogin(_email, 'errada'), throwsA(isA<AppException>()));
+      }
+
+      auth.startLogin('admin@iade.pt', 'admin2026');
+      auth.confirmCode(auth.pendingVerification!.demoCode);
+      final rodrigo = auth.managedUsers.firstWhere((user) => user.email == _email);
+      expect(auth.isLocked(rodrigo), isTrue);
+
+      auth.unlockUser(rodrigo);
+      expect(auth.isLocked(rodrigo), isFalse);
+    });
+
+    test('um estudante não pode desbloquear contas', () {
+      final auth = _newAuth();
+      auth.startLogin(_email, _password);
+      auth.confirmCode(auth.pendingVerification!.demoCode);
+
+      expect(() => auth.unlockUser(auth.managedUsers.first), throwsA(isA<AppException>()));
+    });
+  });
+
   group('Registo', () {
     test('a conta só é criada depois de confirmar o código', () {
       final dataService = DataService();

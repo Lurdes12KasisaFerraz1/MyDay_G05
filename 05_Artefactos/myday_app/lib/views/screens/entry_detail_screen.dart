@@ -8,6 +8,7 @@ import '../../utils/app_colors.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/date_formatter.dart';
 import '../../utils/messages.dart';
+import '../widgets/guest_prompt.dart';
 import '../widgets/round_icon_button.dart';
 import '../widgets/tags.dart';
 
@@ -38,9 +39,11 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     super.dispose();
   }
 
-  void _sendComment() {
+  Future<void> _sendComment() async {
     final author = widget.authController.currentUser;
     if (author == null || _commentController.text.trim().isEmpty) return;
+    if (!await ensureAccount(context, widget.authController, 'comentar')) return;
+    if (!mounted) return;
 
     widget.diaryController.addComment(widget.entry, author, _commentController.text);
     _commentController.clear();
@@ -73,7 +76,11 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
                         const SizedBox(height: 14),
                         _ActionsBar(
                           entry: entry,
-                          onFavorite: () => widget.diaryController.toggleFavorite(entry),
+                          onFavorite: () async {
+                            if (await ensureAccount(context, widget.authController, 'guardar favoritos')) {
+                              widget.diaryController.toggleFavorite(entry);
+                            }
+                          },
                           onExport: () => showNotAvailable(context, 'A exportação em PDF'),
                         ),
                         const SizedBox(height: 16),

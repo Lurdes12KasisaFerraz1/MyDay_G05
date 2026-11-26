@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 
+import '../../controllers/auth_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_images.dart';
 import '../../utils/app_routes.dart';
 import '../widgets/gradient_button.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+  const WelcomeScreen({super.key, required this.authController});
+
+  final AuthController authController;
+
+  void _continueAsGuest(BuildContext context) {
+    authController.continueAsGuest();
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +79,16 @@ class WelcomeScreen extends StatelessWidget {
                         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                       ),
                       child: const Text('Já tenho conta · Entrar'),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => _continueAsGuest(context),
+                      child: const Text(
+                        'Explorar como convidado',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+                      ),
                     ),
                   ),
                 ],

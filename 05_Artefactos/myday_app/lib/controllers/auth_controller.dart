@@ -49,6 +49,7 @@ class AuthController extends ChangeNotifier {
 
   User? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
+  bool get isGuest => _currentUser?.isGuest ?? false;
   PendingVerification? get pendingVerification => _pending;
 
   /// Primeiro passo do login: confirma a palavra-passe e envia o código do
@@ -158,6 +159,36 @@ class AuthController extends ChangeNotifier {
       ..password = newPassword
       ..failedLoginAttempts = 0;
     _pending = null;
+    notifyListeners();
+  }
+
+  /// Entra sem conta: pode explorar a app, mas não guarda registos nem comenta.
+  void continueAsGuest() {
+    _currentUser = User(
+      name: 'Convidado',
+      email: 'convidado@myday.pt',
+      password: '',
+      phone: '',
+      course: 'Sem conta',
+      avatarPath: AppImages.logoIcon,
+      role: UserRole.guest,
+    );
+    _pending = null;
+    notifyListeners();
+  }
+
+  /// Contas que o administrador pode gerir (todas exceto a dele).
+  List<User> get managedUsers {
+    return _dataService.users.where((user) => user != _currentUser).toList();
+  }
+
+  bool isLocked(User user) => _isLocked(user);
+
+  void unlockUser(User user) {
+    if (!(_currentUser?.isAdmin ?? false)) {
+      throw const AppException('Só o administrador pode desbloquear contas.', title: 'Sem permissão');
+    }
+    user.failedLoginAttempts = 0;
     notifyListeners();
   }
 

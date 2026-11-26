@@ -8,6 +8,7 @@ import '../../controllers/settings_controller.dart';
 import '../../utils/app_routes.dart';
 import '../widgets/app_background.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/guest_prompt.dart';
 import 'community_screen.dart';
 import 'diary_screen.dart';
 import 'profile_screen.dart';
@@ -41,7 +42,11 @@ class _MainScreenState extends State<MainScreen> {
 
   late int _currentTab = widget.initialTab;
 
-  void _openNewEntry() => Navigator.pushNamed(context, AppRoutes.newEntry);
+  Future<void> _openNewEntry() async {
+    final hasAccount = await ensureAccount(context, widget.authController, 'guardar registos');
+    if (!hasAccount || !mounted) return;
+    Navigator.pushNamed(context, AppRoutes.newEntry);
+  }
 
   void _backToDiary() => setState(() => _currentTab = _diaryTab);
 
@@ -70,7 +75,11 @@ class _MainScreenState extends State<MainScreen> {
                 authController: widget.authController,
               ),
               ProjectsScreen(projectController: widget.projectController, onBack: _backToDiary),
-              CommunityScreen(communityController: widget.communityController, onBack: _backToDiary),
+              CommunityScreen(
+                communityController: widget.communityController,
+                onBack: _backToDiary,
+                onParticipate: _openNewEntry,
+              ),
               ProfileScreen(
                 authController: widget.authController,
                 settingsController: widget.settingsController,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/auth_controller.dart';
+import '../../controllers/diary_controller.dart';
 import '../../controllers/settings_controller.dart';
 import '../../models/user.dart';
 import '../../utils/app_colors.dart';
@@ -16,11 +17,13 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({
     super.key,
     required this.authController,
+    required this.diaryController,
     required this.settingsController,
     required this.onBack,
   });
 
   final AuthController authController;
+  final DiaryController diaryController;
   final SettingsController settingsController;
   final VoidCallback onBack;
 
@@ -79,7 +82,10 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 22),
         const SectionHeader(title: 'Conquistas'),
         const SizedBox(height: 12),
-        _Achievements(streakDays: user.streakDays),
+        ListenableBuilder(
+          listenable: diaryController,
+          builder: (context, _) => _Achievements(streakDays: diaryController.bestStreak),
+        ),
         const SizedBox(height: 22),
         const SectionHeader(title: 'Privacidade e permissões'),
         const SizedBox(height: 12),

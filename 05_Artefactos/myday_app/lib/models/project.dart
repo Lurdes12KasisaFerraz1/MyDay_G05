@@ -7,6 +7,7 @@ class Project {
     required this.visibility,
     required this.entriesCount,
     required this.lastActivity,
+    required this.description,
   });
 
   final String name;
@@ -14,6 +15,7 @@ class Project {
   final EntryVisibility visibility;
   final int entriesCount;
   final String lastActivity;
+  final String description;
 }
 
 class StudyGroup {

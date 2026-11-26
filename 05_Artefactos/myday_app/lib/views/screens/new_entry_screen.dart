@@ -16,10 +16,18 @@ import '../widgets/gradient_button.dart';
 import '../widgets/round_icon_button.dart';
 
 class NewEntryScreen extends StatefulWidget {
-  const NewEntryScreen({super.key, required this.diaryController, required this.settingsController});
+  const NewEntryScreen({
+    super.key,
+    required this.diaryController,
+    required this.settingsController,
+    this.initialProject,
+  });
 
   final DiaryController diaryController;
   final SettingsController settingsController;
+
+  /// Projeto já escolhido quando o registo é criado a partir do projeto.
+  final String? initialProject;
 
   @override
   State<NewEntryScreen> createState() => _NewEntryScreenState();
@@ -32,12 +40,12 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
   final _tagsController = TextEditingController();
 
   Subject _subject = Subject.mathematics;
-  late String _project = widget.diaryController.projectNames.first;
+  late String _project = widget.initialProject ?? widget.diaryController.projectNames.first;
   EntryVisibility _visibility = EntryVisibility.private;
   AutovalidateMode _autovalidate = AutovalidateMode.disabled;
   AttachmentType? _media;
   String? _imagePath;
-  String? _location;
+  ({double latitude, double longitude})? _location;
   bool _isLocating = false;
 
   @override
@@ -95,6 +103,12 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
     }
   }
 
+  String? get _locationLabel {
+    final location = _location;
+    if (location == null) return null;
+    return '${location.latitude.toStringAsFixed(5)}, ${location.longitude.toStringAsFixed(5)}';
+  }
+
   List<String> _parseTags() {
     return _tagsController.text
         .split(RegExp(r'[\s,]+'))
@@ -117,7 +131,9 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
       project: _project,
       visibility: _visibility,
       tags: _parseTags(),
-      location: _location,
+      location: _locationLabel,
+      latitude: _location?.latitude,
+      longitude: _location?.longitude,
       imagePath: _imagePath,
       mediaType: _media,
     );
@@ -176,7 +192,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                       ],
                       const SizedBox(height: 16),
                       _OptionsCard(
-                        location: _isLocating ? 'A obter posição…' : _location ?? 'Sem local',
+                        location: _isLocating ? 'A obter posição…' : _locationLabel ?? 'Sem local',
                         subject: _subject,
                         project: _project,
                         projects: widget.diaryController.projectNames,

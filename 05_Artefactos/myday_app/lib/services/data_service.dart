@@ -64,7 +64,6 @@ class DataService {
         entriesCount: 86,
         followers: 41,
         following: 38,
-        streakDays: 12,
       ),
       User(
         name: 'Ana Lopes',
@@ -76,7 +75,6 @@ class DataService {
         entriesCount: 86,
         followers: 41,
         following: 38,
-        streakDays: 7,
       ),
       User(
         name: 'Admin MyDay',
@@ -99,6 +97,8 @@ class DataService {
         project: 'Cálculo I',
         createdAt: today.add(const Duration(hours: 10, minutes: 42)),
         location: 'Biblioteca IADE',
+        latitude: 38.70755,
+        longitude: -9.15290,
         imagePath: AppImages.derivatives,
         tags: const ['derivadas', 'cálculo'],
         comments: [
@@ -118,6 +118,9 @@ class DataService {
         project: 'Bases de Dados',
         createdAt: today.add(const Duration(hours: 9, minutes: 15)),
         visibility: EntryVisibility.friends,
+        location: 'IADE · Sala 2.04',
+        latitude: 38.70712,
+        longitude: -9.15234,
         imagePath: AppImages.databases,
         mediaType: AttachmentType.audio,
         mediaLabel: 'Áudio · 1:24',
@@ -129,11 +132,16 @@ class DataService {
         subject: Subject.mobile,
         project: 'App MyDay',
         createdAt: yesterday.add(const Duration(hours: 18, minutes: 30)),
+        location: 'Casa · Alcântara',
+        latitude: 38.70389,
+        longitude: -9.17602,
         imagePath: AppImages.mobileApp,
         mediaType: AttachmentType.video,
         mediaLabel: 'Vídeo · 0:42',
       ),
     ]);
+
+    _entries.addAll(_pastEntries(today));
 
     _projects.addAll(const [
       Project(
@@ -142,6 +150,7 @@ class DataService {
         visibility: EntryVisibility.private,
         entriesCount: 14,
         lastActivity: 'hoje',
+        description: 'Limites, derivadas e integrais: o que percebi em cada aula e as fichas resolvidas.',
       ),
       Project(
         name: 'App MyDay',
@@ -149,6 +158,7 @@ class DataService {
         visibility: EntryVisibility.public,
         entriesCount: 23,
         lastActivity: 'ontem',
+        description: 'Diário do desenvolvimento da app MyDay em Flutter, ecrã a ecrã.',
       ),
       Project(
         name: 'Química – laboratório',
@@ -156,6 +166,7 @@ class DataService {
         visibility: EntryVisibility.friends,
         entriesCount: 6,
         lastActivity: 'há 3 dias',
+        description: 'Registos das aulas práticas: montagens, observações e resultados.',
       ),
       Project(
         name: 'Bases de Dados',
@@ -163,6 +174,7 @@ class DataService {
         visibility: EntryVisibility.friends,
         entriesCount: 11,
         lastActivity: 'há 5 dias',
+        description: 'Modelação ER, normalização e SQL para o teste e para o projeto de grupo.',
       ),
     ]);
 
@@ -213,5 +225,38 @@ class DataService {
         feed: CommunityFeed.groups,
       ),
     ]);
+  }
+
+  /// Um registo por dia nos últimos 10 dias, para o calendário mostrar uma
+  /// sequência de dias seguidos.
+  List<Entry> _pastEntries(DateTime today) {
+    const samples = [
+      ('Integrais por partes', Subject.mathematics, 'Cálculo I', AppImages.derivatives),
+      ('Modelo ER da biblioteca', Subject.databases, 'Bases de Dados', AppImages.databases),
+      ('Navegação entre ecrãs', Subject.mobile, 'App MyDay', AppImages.developer),
+      ('Titulação: preparação', Subject.chemistry, 'Química – laboratório', AppImages.chemistryLab),
+      ('Limites notáveis', Subject.mathematics, 'Cálculo I', AppImages.derivatives),
+      ('Chaves estrangeiras', Subject.databases, 'Bases de Dados', AppImages.databases),
+      ('Widgets com estado', Subject.mobile, 'App MyDay', AppImages.mobileApp),
+      ('Soluções tampão', Subject.chemistry, 'Química – laboratório', AppImages.chemistryLab),
+      ('Regra de L\'Hôpital', Subject.mathematics, 'Cálculo I', AppImages.derivatives),
+      ('Consultas com GROUP BY', Subject.databases, 'Bases de Dados', AppImages.databases),
+    ];
+
+    return [
+      for (var i = 0; i < samples.length; i++)
+        Entry(
+          id: 'p${i + 1}',
+          title: samples[i].$1,
+          text: 'Resumo da aula e dos exercícios feitos.',
+          subject: samples[i].$2,
+          project: samples[i].$3,
+          createdAt: today.subtract(Duration(days: i + 2)).add(const Duration(hours: 17)),
+          location: 'IADE',
+          latitude: 38.70735 + i * 0.0004,
+          longitude: -9.15265 - i * 0.0005,
+          imagePath: samples[i].$4,
+        ),
+    ];
   }
 }

@@ -11,7 +11,6 @@ class User {
     this.entriesCount = 0,
     this.followers = 0,
     this.following = 0,
-    this.streakDays = 0,
     this.role = UserRole.student,
   });
 
@@ -25,7 +24,6 @@ class User {
   int entriesCount;
   int followers;
   int following;
-  int streakDays;
 
   /// Tentativas de login falhadas seguidas. Volta a 0 quando entra.
   int failedLoginAttempts = 0;

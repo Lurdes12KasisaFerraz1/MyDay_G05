@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/project_controller.dart';
 import '../../models/enums.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_routes.dart';
 import '../../utils/messages.dart';
 import '../widgets/choice_tabs.dart';
 import '../widgets/project_card.dart';
@@ -84,7 +85,7 @@ class ProjectsScreen extends StatelessWidget {
                   for (final project in projects)
                     ProjectCard(
                       project: project,
-                      onTap: () => showNotAvailable(context, 'O detalhe do projeto'),
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.projectDetail, arguments: project),
                     ),
                 ],
               ),

@@ -160,6 +160,26 @@ void main() {
     });
   });
 
+  group('Dias seguidos', () {
+    test('os dados de exemplo têm 12 dias seguidos e a próxima recompensa é aos 14', () {
+      final diary = DiaryController(DataService(), LocationService());
+
+      expect(diary.currentStreak, 12);
+      expect(diary.bestStreak, 12);
+      expect(diary.nextReward?.days, 14);
+    });
+
+    test('os registos de um projeto são filtrados pelo nome', () {
+      final diary = DiaryController(DataService(), LocationService());
+
+      final entries = diary.entriesForProject('Cálculo I');
+
+      expect(entries, isNotEmpty);
+      expect(entries.every((entry) => entry.project == 'Cálculo I'), isTrue);
+      expect(diary.projectNamed('Cálculo I'), isNotNull);
+    });
+  });
+
   group('ProjectController', () {
     test('filtra os projetos pela visibilidade', () {
       final projects = ProjectController(DataService());

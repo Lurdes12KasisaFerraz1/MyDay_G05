@@ -15,6 +15,9 @@ Aplicação móvel em Flutter do projeto MyDay (Grupo G05, IADE). É um diário 
 | Detalhe do registo | `lib/views/screens/entry_detail_screen.dart` |
 | Código de confirmação / 2 fatores | `lib/views/screens/verify_code_screen.dart` |
 | Recuperar palavra-passe | `lib/views/screens/forgot_password_screen.dart` |
+| Detalhe do projeto | `lib/views/screens/project_detail_screen.dart` |
+| Mapa | `lib/views/screens/map_screen.dart` |
+| Calendário e recompensas | `lib/views/screens/calendar_screen.dart` |
 | Projetos | `lib/views/screens/projects_screen.dart` |
 | Comunidade | `lib/views/screens/community_screen.dart` |
 | Perfil | `lib/views/screens/profile_screen.dart` |
@@ -34,6 +37,9 @@ Aplicação móvel em Flutter do projeto MyDay (Grupo G05, IADE). É um diário 
 
 - **GPS:** o botão *Local* do novo registo vai buscar a posição atual do telemóvel (é preciso a permissão de localização e o interruptor *Localização* ativo no Perfil).
 - **Fotografias por categoria:** o botão *Foto* abre as fotografias da app organizadas em Matemática, Bases de Dados, Programação, Química e Estudo. Um registo sem fotografia usa a imagem da disciplina.
+- **Detalhe do projeto:** toca num projeto (ou no chip do projeto num registo) para ver a descrição, os números, as disciplinas e os registos, e criar um registo já associado a esse projeto.
+- **Mapa:** em Diário → *Mapa*, ou *Ver no mapa* num registo. Mostra os registos com posição GPS sobre o OpenStreetMap; tocar num marcador mostra o registo.
+- **Calendário com recompensas:** em Diário → *Calendário*, ou no cartão dos dias seguidos. Mostra o mês com os dias com registo, a sequência atual e a melhor, a barra de progresso até à próxima recompensa e as medalhas (3, 7, 14, 30, 60 e 100 dias seguidos). Tocar num dia mostra os registos desse dia.
 - **Código QR do perfil:** o botão pequeno de QR no Perfil mostra o código e permite partilhá-lo (imagem + link) pelas apps do telemóvel.
 - Todos os ecrãs secundários têm botão de voltar; nos separadores, o voltar regressa ao Diário.
 
@@ -103,6 +109,7 @@ Os dados ficam em memória, por isso voltam ao estado inicial sempre que a app �
 ## Dependências
 
 - `geolocator` – acesso ao GPS do telemóvel (não existe alternativa no SDK do Flutter).
+- `flutter_map` e `latlong2` – mapa com o OpenStreetMap (gratuito, sem chave de API).
 - `qr_flutter` – desenha o código QR do perfil.
 - `share_plus` e `cross_file` – abrem a folha de partilha do telemóvel com a imagem do QR.
 - `flutter_lints` – só em desenvolvimento.

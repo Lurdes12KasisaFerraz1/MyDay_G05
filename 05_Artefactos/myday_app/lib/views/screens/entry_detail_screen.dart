@@ -29,8 +29,6 @@ class EntryDetailScreen extends StatefulWidget {
 }
 
 class _EntryDetailScreenState extends State<EntryDetailScreen> {
-  static const int _projectsTab = 1;
-
   final _commentController = TextEditingController();
 
   @override
@@ -50,8 +48,25 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     FocusScope.of(context).unfocus();
   }
 
-  void _openProjects() {
-    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false, arguments: _projectsTab);
+  void _openProject() {
+    final project = widget.diaryController.projectNamed(widget.entry.project);
+    if (project == null) {
+      showAlert(context, title: 'Projeto não encontrado', message: 'Este projeto já não existe.');
+      return;
+    }
+    Navigator.pushNamed(context, AppRoutes.projectDetail, arguments: project);
+  }
+
+  void _openMap() {
+    if (!widget.entry.hasCoordinates) {
+      showAlert(
+        context,
+        title: 'Sem posição GPS',
+        message: 'Este registo foi guardado sem localização do telemóvel, por isso não aparece no mapa.',
+      );
+      return;
+    }
+    Navigator.pushNamed(context, AppRoutes.map, arguments: widget.entry);
   }
 
   @override
@@ -72,7 +87,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
                     sliver: SliverList.list(
                       children: [
-                        _EntryInfo(entry: entry, onProjectTap: _openProjects),
+                        _EntryInfo(entry: entry, onProjectTap: _openProject, onMapTap: _openMap),
                         const SizedBox(height: 14),
                         _ActionsBar(
                           entry: entry,
@@ -149,10 +164,11 @@ class _HeroImage extends StatelessWidget {
 }
 
 class _EntryInfo extends StatelessWidget {
-  const _EntryInfo({required this.entry, required this.onProjectTap});
+  const _EntryInfo({required this.entry, required this.onProjectTap, required this.onMapTap});
 
   final Entry entry;
   final VoidCallback onProjectTap;
+  final VoidCallback onMapTap;
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +203,7 @@ class _EntryInfo extends StatelessWidget {
         ],
         if (entry.location != null) ...[
           const SizedBox(height: 14),
-          _LocationRow(location: entry.location!),
+          _LocationRow(location: entry.location!, onMapTap: onMapTap),
         ],
         if (entry.tags.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -205,9 +221,10 @@ class _EntryInfo extends StatelessWidget {
 }
 
 class _LocationRow extends StatelessWidget {
-  const _LocationRow({required this.location});
+  const _LocationRow({required this.location, required this.onMapTap});
 
   final String location;
+  final VoidCallback onMapTap;
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +242,7 @@ class _LocationRow extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: () => showNotAvailable(context, 'A vista de mapa'),
+            onPressed: onMapTap,
             child: const Text('Ver no mapa', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.link)),
           ),
         ],

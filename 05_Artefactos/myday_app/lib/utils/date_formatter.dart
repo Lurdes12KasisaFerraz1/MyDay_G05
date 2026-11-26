@@ -37,6 +37,12 @@ class DateFormatter {
     return '${date.day} $month ${date.year} · ${time(date)}';
   }
 
+  /// Exemplo: "Novembro 2026".
+  static String monthYear(DateTime date) {
+    final month = _months[date.month - 1];
+    return '${month[0].toUpperCase()}${month.substring(1)} ${date.year}';
+  }
+
   /// Exemplo: "10:42".
   static String time(DateTime date) {
     final hour = date.hour.toString().padLeft(2, '0');

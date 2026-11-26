@@ -9,11 +9,13 @@ class StreakCard extends StatelessWidget {
     required this.streakDays,
     required this.entriesThisWeek,
     required this.weekActivity,
+    this.onTap,
   });
 
   final int streakDays;
   final int entriesThisWeek;
   final List<bool> weekActivity;
+  final VoidCallback? onTap;
 
   static const List<String> _weekdayInitials = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 
@@ -21,7 +23,7 @@ class StreakCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final today = DateTime.now().weekday - 1;
 
-    return Container(
+    final card = Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -61,6 +63,13 @@ class StreakCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (onTap != null)
+                const Row(
+                  children: [
+                    Text('Ver', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                    Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+                  ],
+                ),
             ],
           ),
           const SizedBox(height: 14),
@@ -97,5 +106,7 @@ class StreakCard extends StatelessWidget {
         ],
       ),
     );
+
+    return onTap == null ? card : GestureDetector(onTap: onTap, child: card);
   }
 }

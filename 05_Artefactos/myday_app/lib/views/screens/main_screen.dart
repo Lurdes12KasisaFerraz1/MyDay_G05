@@ -82,6 +82,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               ProfileScreen(
                 authController: widget.authController,
+                diaryController: widget.diaryController,
                 settingsController: widget.settingsController,
                 onBack: _backToDiary,
               ),

@@ -11,6 +11,8 @@ class Entry {
     required this.createdAt,
     this.visibility = EntryVisibility.private,
     this.location,
+    this.latitude,
+    this.longitude,
     this.imagePath,
     this.mediaType,
     this.mediaLabel,
@@ -27,10 +29,14 @@ class Entry {
   final DateTime createdAt;
   final EntryVisibility visibility;
   final String? location;
+  final double? latitude;
+  final double? longitude;
   final String? imagePath;
   final AttachmentType? mediaType;
   final String? mediaLabel;
   final List<String> tags;
   final List<Comment> comments;
   bool isFavorite;
+
+  bool get hasCoordinates => latitude != null && longitude != null;
 }

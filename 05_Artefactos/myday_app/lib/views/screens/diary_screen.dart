@@ -43,7 +43,8 @@ class DiaryScreen extends StatelessWidget {
               const _GuestBanner()
             else
               StreakCard(
-                streakDays: user?.streakDays ?? 0,
+                streakDays: diaryController.currentStreak,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.calendar),
                 entriesThisWeek: diaryController.entriesThisWeek,
                 weekActivity: diaryController.weekActivity,
               ),
@@ -125,7 +126,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// Escolha entre lista, mapa e calendário. Nesta versão só a lista existe.
+/// A lista é a vista atual; o mapa e o calendário abrem em ecrã próprio.
 class _ViewSelector extends StatelessWidget {
   const _ViewSelector();
 
@@ -143,12 +144,12 @@ class _ViewSelector extends StatelessWidget {
           _ViewOption(
             icon: Icons.map_outlined,
             label: 'Mapa',
-            onTap: () => showNotAvailable(context, 'A vista de mapa'),
+            onTap: () => Navigator.pushNamed(context, AppRoutes.map),
           ),
           _ViewOption(
             icon: Icons.calendar_today_outlined,
             label: 'Calendário',
-            onTap: () => showNotAvailable(context, 'A vista de calendário'),
+            onTap: () => Navigator.pushNamed(context, AppRoutes.calendar),
           ),
         ],
       ),

@@ -6,16 +6,20 @@ import 'controllers/diary_controller.dart';
 import 'controllers/project_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'models/entry.dart';
+import 'models/project.dart';
 import 'services/data_service.dart';
 import 'services/location_service.dart';
 import 'services/verification_service.dart';
 import 'utils/app_routes.dart';
 import 'utils/app_theme.dart';
+import 'views/screens/calendar_screen.dart';
 import 'views/screens/entry_detail_screen.dart';
 import 'views/screens/forgot_password_screen.dart';
 import 'views/screens/login_screen.dart';
 import 'views/screens/main_screen.dart';
+import 'views/screens/map_screen.dart';
 import 'views/screens/new_entry_screen.dart';
+import 'views/screens/project_detail_screen.dart';
 import 'views/screens/signup_screen.dart';
 import 'views/screens/splash_screen.dart';
 import 'views/screens/verify_code_screen.dart';
@@ -76,7 +80,18 @@ class _MyDayAppState extends State<MyDayApp> {
       AppRoutes.newEntry => NewEntryScreen(
           diaryController: _diaryController,
           settingsController: _settingsController,
+          initialProject: settings.arguments as String?,
         ),
+      AppRoutes.projectDetail => ProjectDetailScreen(
+          project: settings.arguments! as Project,
+          diaryController: _diaryController,
+          authController: _authController,
+        ),
+      AppRoutes.map => MapScreen(
+          diaryController: _diaryController,
+          focusEntry: settings.arguments as Entry?,
+        ),
+      AppRoutes.calendar => CalendarScreen(diaryController: _diaryController),
       AppRoutes.entryDetail => EntryDetailScreen(
           entry: settings.arguments! as Entry,
           diaryController: _diaryController,

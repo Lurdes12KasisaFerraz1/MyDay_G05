@@ -34,6 +34,7 @@ Aplicação móvel em Flutter do projeto MyDay (Grupo G05, IADE). É um diário 
 
 - **GPS:** o botão *Local* do novo registo vai buscar a posição atual do telemóvel (é preciso a permissão de localização e o interruptor *Localização* ativo no Perfil).
 - **Fotografias por categoria:** o botão *Foto* abre as fotografias da app organizadas em Matemática, Bases de Dados, Programação, Química e Estudo. Um registo sem fotografia usa a imagem da disciplina.
+- **Código QR do perfil:** o botão pequeno de QR no Perfil mostra o código e permite partilhá-lo (imagem + link) pelas apps do telemóvel.
 - Todos os ecrãs secundários têm botão de voltar; nos separadores, o voltar regressa ao Diário.
 
 ## Estrutura (MVC)
@@ -96,6 +97,8 @@ Os dados ficam em memória, por isso voltam ao estado inicial sempre que a app �
 ## Dependências
 
 - `geolocator` – acesso ao GPS do telemóvel (não existe alternativa no SDK do Flutter).
+- `qr_flutter` – desenha o código QR do perfil.
+- `share_plus` e `cross_file` – abrem a folha de partilha do telemóvel com a imagem do QR.
 - `flutter_lints` – só em desenvolvimento.
 
 O estado é gerido com `ChangeNotifier` e `ListenableBuilder`, sem pacotes de gestão de estado.

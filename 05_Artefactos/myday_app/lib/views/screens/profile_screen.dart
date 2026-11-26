@@ -6,6 +6,7 @@ import '../../models/user.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/messages.dart';
+import '../widgets/profile_qr_sheet.dart';
 import '../widgets/round_icon_button.dart';
 import '../widgets/section_header.dart';
 
@@ -126,8 +127,12 @@ class _ProfileHeader extends StatelessWidget {
         ),
         RoundIconButton(
           icon: Icons.qr_code_2_rounded,
-          tooltip: 'Mostrar QR Code do perfil',
-          onPressed: () => showNotAvailable(context, 'O QR Code do perfil'),
+          tooltip: 'Partilhar código QR',
+          onPressed: () => showModalBottomSheet<void>(
+            context: context,
+            backgroundColor: AppColors.surface,
+            builder: (_) => ProfileQrSheet(user: user),
+          ),
         ),
       ],
     );

@@ -52,19 +52,17 @@ class ProjectDetailScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _StatsRow(
                       stats: [
-                        ('${project.entriesCount}', 'Registos'),
+                        ('${entries.length}', 'Registos'),
                         ('${entries.where((entry) => entry.hasCoordinates).length}', 'Com local'),
-                        (project.lastActivity, 'Última atividade'),
+                        (diaryController.lastActivityFor(project.name), 'Última atividade'),
                       ],
                     ),
-                    if (subjects.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [for (final subject in subjects) SubjectChip(subject: subject)],
-                      ),
-                    ],
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [for (final subject in {project.subject, ...subjects}) SubjectChip(subject: subject)],
+                    ),
                     const SizedBox(height: 18),
                     GradientButton(
                       label: 'Novo registo neste projeto',

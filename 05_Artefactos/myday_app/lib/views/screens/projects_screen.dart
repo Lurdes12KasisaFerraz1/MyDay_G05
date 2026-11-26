@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 
+import '../../controllers/diary_controller.dart';
 import '../../controllers/project_controller.dart';
 import '../../models/enums.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_images.dart';
 import '../../utils/app_routes.dart';
-import '../../utils/messages.dart';
 import '../widgets/choice_tabs.dart';
 import '../widgets/project_card.dart';
 import '../widgets/round_icon_button.dart';
 import '../widgets/section_header.dart';
 
 class ProjectsScreen extends StatelessWidget {
-  const ProjectsScreen({super.key, required this.projectController, required this.onBack});
+  const ProjectsScreen({
+    super.key,
+    required this.projectController,
+    required this.diaryController,
+    required this.onBack,
+    required this.onNewProject,
+  });
 
   final ProjectController projectController;
+
+  /// Usado para contar os registos de cada projeto.
+  final DiaryController diaryController;
   final VoidCallback onBack;
+  final VoidCallback onNewProject;
 
   static const List<EntryVisibility?> _filters = [
     null,
@@ -35,7 +46,7 @@ class ProjectsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: projectController,
+      listenable: Listenable.merge([projectController, diaryController]),
       builder: (context, _) {
         final projects = projectController.projects;
 
@@ -46,9 +57,11 @@ class ProjectsScreen extends StatelessWidget {
               children: [
                 RoundIconButton(icon: Icons.arrow_back_rounded, tooltip: 'Voltar ao Diário', onPressed: onBack),
                 const SizedBox(width: 12),
+                Image.asset(AppImages.logoIcon, height: 30),
+                const SizedBox(width: 10),
                 Expanded(child: Text('Projetos', style: Theme.of(context).textTheme.headlineMedium)),
                 FilledButton.icon(
-                  onPressed: () => showNotAvailable(context, 'A criação de projetos'),
+                  onPressed: onNewProject,
                   icon: const Icon(Icons.add_rounded, size: 18),
                   label: const Text('Novo'),
                   style: FilledButton.styleFrom(
@@ -85,6 +98,8 @@ class ProjectsScreen extends StatelessWidget {
                   for (final project in projects)
                     ProjectCard(
                       project: project,
+                      entriesCount: diaryController.entriesForProject(project.name).length,
+                      lastActivity: diaryController.lastActivityFor(project.name),
                       onTap: () => Navigator.pushNamed(context, AppRoutes.projectDetail, arguments: project),
                     ),
                 ],

@@ -2,8 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:myday_app/controllers/auth_controller.dart';
 import 'package:myday_app/controllers/diary_controller.dart';
 import 'package:myday_app/controllers/message_controller.dart';
+import 'package:myday_app/controllers/notification_controller.dart';
 import 'package:myday_app/controllers/project_controller.dart';
+import 'package:myday_app/models/app_notification.dart';
 import 'package:myday_app/models/enums.dart';
+import 'package:myday_app/models/project.dart';
 import 'package:myday_app/services/data_service.dart';
 import 'package:myday_app/services/location_service.dart';
 import 'package:myday_app/services/verification_service.dart';
@@ -251,6 +254,87 @@ void main() {
       final group = projects.groups.first;
 
       expect(() => projects.leaveGroup(group, group.owner), throwsA(isA<AppException>()));
+    });
+  });
+
+  group('Projetos novos', () {
+    test('criar um projeto e adicionar-lhe registos', () {
+      final dataService = DataService();
+      final projects = ProjectController(dataService);
+      final diary = DiaryController(dataService, LocationService());
+
+      final project = projects.createProject(
+        name: 'Física I',
+        description: 'Cinemática e dinâmica.',
+        subject: Subject.mathematics,
+        visibility: EntryVisibility.private,
+        coverImage: AppImages.derivatives,
+      );
+      expect(diary.projectNames, contains('Física I'));
+      expect(diary.lastActivityFor('Física I'), 'sem registos');
+
+      diary.addEntry(
+        title: 'Movimento uniforme',
+        text: 'x = x0 + v·t',
+        subject: project.subject,
+        project: project.name,
+        visibility: EntryVisibility.private,
+        tags: const [],
+      );
+      expect(diary.entriesForProject('Física I').length, 1);
+      expect(diary.lastActivityFor('Física I'), 'hoje');
+    });
+
+    test('não aceita nomes vazios nem repetidos', () {
+      final projects = ProjectController(DataService());
+      Project create(String name) => projects.createProject(
+            name: name,
+            description: '',
+            subject: Subject.mathematics,
+            visibility: EntryVisibility.private,
+            coverImage: AppImages.derivatives,
+          );
+
+      expect(() => create('   '), throwsA(isA<AppException>()));
+      expect(() => create('calculo i'), throwsA(isA<AppException>()));
+    });
+  });
+
+  group('Pesquisa', () {
+    test('encontra registos e projetos sem ligar a acentos', () {
+      final dataService = DataService();
+      final diary = DiaryController(dataService, LocationService());
+      final projects = ProjectController(dataService);
+
+      expect(diary.search('derivadas'), isNotEmpty);
+      expect(projects.searchProjects('calculo').map((p) => p.name), contains('Cálculo I'));
+      expect(projects.searchGroups('quimica'), isNotEmpty);
+      expect(diary.search('   '), isEmpty);
+    });
+  });
+
+  group('Notificações', () {
+    test('mostra mensagens por ler e deixa marcar todas como lidas', () {
+      final dataService = DataService();
+      final auth = AuthController(dataService, VerificationService());
+      auth.startLogin(_email, _password);
+      auth.confirmCode(auth.pendingVerification!.demoCode);
+      final diary = DiaryController(dataService, LocationService());
+      final notifications = NotificationController(
+        dataService,
+        auth,
+        diary,
+        MessageController(dataService, auth),
+        ProjectController(dataService),
+      );
+
+      final types = notifications.notifications.map((n) => n.type);
+      expect(types, contains(NotificationType.message));
+      expect(types, contains(NotificationType.challenge));
+      expect(notifications.unreadCount, greaterThan(0));
+
+      notifications.markAllAsRead();
+      expect(notifications.unreadCount, 0);
     });
   });
 

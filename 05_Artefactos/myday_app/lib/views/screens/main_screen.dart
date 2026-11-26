@@ -4,6 +4,7 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/community_controller.dart';
 import '../../controllers/diary_controller.dart';
 import '../../controllers/message_controller.dart';
+import '../../controllers/notification_controller.dart';
 import '../../controllers/project_controller.dart';
 import '../../controllers/settings_controller.dart';
 import '../../utils/app_routes.dart';
@@ -25,6 +26,7 @@ class MainScreen extends StatefulWidget {
     required this.projectController,
     required this.communityController,
     required this.messageController,
+    required this.notificationController,
     required this.settingsController,
   });
 
@@ -34,6 +36,7 @@ class MainScreen extends StatefulWidget {
   final ProjectController projectController;
   final CommunityController communityController;
   final MessageController messageController;
+  final NotificationController notificationController;
   final SettingsController settingsController;
 
   @override
@@ -49,6 +52,12 @@ class _MainScreenState extends State<MainScreen> {
     final hasAccount = await ensureAccount(context, widget.authController, 'guardar registos');
     if (!hasAccount || !mounted) return;
     Navigator.pushNamed(context, AppRoutes.newEntry);
+  }
+
+  Future<void> _openNewProject() async {
+    final hasAccount = await ensureAccount(context, widget.authController, 'criar projetos');
+    if (!hasAccount || !mounted) return;
+    Navigator.pushNamed(context, AppRoutes.newProject);
   }
 
   Future<void> _openMessages() async {
@@ -82,8 +91,14 @@ class _MainScreenState extends State<MainScreen> {
               DiaryScreen(
                 diaryController: widget.diaryController,
                 authController: widget.authController,
+                notificationController: widget.notificationController,
               ),
-              ProjectsScreen(projectController: widget.projectController, onBack: _backToDiary),
+              ProjectsScreen(
+                projectController: widget.projectController,
+                diaryController: widget.diaryController,
+                onBack: _backToDiary,
+                onNewProject: _openNewProject,
+              ),
               CommunityScreen(
                 communityController: widget.communityController,
                 onBack: _backToDiary,

@@ -4,6 +4,7 @@ import 'controllers/auth_controller.dart';
 import 'controllers/community_controller.dart';
 import 'controllers/diary_controller.dart';
 import 'controllers/message_controller.dart';
+import 'controllers/notification_controller.dart';
 import 'controllers/project_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'models/entry.dart';
@@ -26,7 +27,10 @@ import 'views/screens/main_screen.dart';
 import 'views/screens/map_screen.dart';
 import 'views/screens/messages_screen.dart';
 import 'views/screens/new_entry_screen.dart';
+import 'views/screens/new_project_screen.dart';
+import 'views/screens/notifications_screen.dart';
 import 'views/screens/project_detail_screen.dart';
+import 'views/screens/search_screen.dart';
 import 'views/screens/signup_screen.dart';
 import 'views/screens/splash_screen.dart';
 import 'views/screens/verify_code_screen.dart';
@@ -47,10 +51,19 @@ class _MyDayAppState extends State<MyDayApp> {
   late final ProjectController _projectController = ProjectController(_dataService);
   late final CommunityController _communityController = CommunityController(_dataService);
   late final MessageController _messageController = MessageController(_dataService, _authController);
+  late final NotificationController _notificationController = NotificationController(
+    _dataService,
+    _authController,
+    _diaryController,
+    _messageController,
+    _projectController,
+  );
   final SettingsController _settingsController = SettingsController();
 
   @override
   void dispose() {
+    // Primeiro o das notificações, porque está a ouvir os outros controladores.
+    _notificationController.dispose();
     _authController.dispose();
     _diaryController.dispose();
     _projectController.dispose();
@@ -85,6 +98,7 @@ class _MyDayAppState extends State<MyDayApp> {
           projectController: _projectController,
           communityController: _communityController,
           messageController: _messageController,
+          notificationController: _notificationController,
           settingsController: _settingsController,
         ),
       AppRoutes.newEntry => NewEntryScreen(
@@ -106,6 +120,17 @@ class _MyDayAppState extends State<MyDayApp> {
       AppRoutes.groupDetail => GroupDetailScreen(
           group: settings.arguments! as StudyGroup,
           projectController: _projectController,
+          authController: _authController,
+        ),
+      AppRoutes.newProject => NewProjectScreen(projectController: _projectController),
+      AppRoutes.search => SearchScreen(
+          diaryController: _diaryController,
+          projectController: _projectController,
+          messageController: _messageController,
+          authController: _authController,
+        ),
+      AppRoutes.notifications => NotificationsScreen(
+          notificationController: _notificationController,
           authController: _authController,
         ),
       AppRoutes.messages => MessagesScreen(messageController: _messageController),

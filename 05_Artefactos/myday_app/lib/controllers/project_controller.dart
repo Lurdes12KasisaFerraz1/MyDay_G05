@@ -6,6 +6,7 @@ import '../models/study_group.dart';
 import '../models/user.dart';
 import '../services/data_service.dart';
 import '../utils/app_exception.dart';
+import '../utils/text_search.dart';
 
 class ProjectController extends ChangeNotifier {
   ProjectController(this._dataService);
@@ -23,6 +24,48 @@ class ProjectController extends ChangeNotifier {
     final all = _dataService.projects;
     if (_filter == null) return all;
     return all.where((project) => project.visibility == _filter).toList();
+  }
+
+  /// Cria um projeto novo. O nome é obrigatório, tem no máximo 40 caracteres
+  /// (prj_nome) e não pode repetir o de outro projeto.
+  Project createProject({
+    required String name,
+    required String description,
+    required Subject subject,
+    required EntryVisibility visibility,
+    required String coverImage,
+  }) {
+    final cleanName = name.trim();
+    if (cleanName.isEmpty) {
+      throw const AppException('Dá um nome ao projeto.', title: 'Falta o nome');
+    }
+    final exists = _dataService.projects.any(
+      (project) => TextSearch.normalize(project.name) == TextSearch.normalize(cleanName),
+    );
+    if (exists) {
+      throw const AppException('Já tens um projeto com este nome.', title: 'Projeto repetido');
+    }
+
+    final project = Project(
+      name: cleanName,
+      coverImage: coverImage,
+      visibility: visibility,
+      subject: subject,
+      description: description.trim(),
+    );
+    _dataService.addProject(project);
+    notifyListeners();
+    return project;
+  }
+
+  List<Project> searchProjects(String query) {
+    return _dataService.projects
+        .where((project) => TextSearch.matches(query, [project.name, project.description, project.subject.label]))
+        .toList();
+  }
+
+  List<StudyGroup> searchGroups(String query) {
+    return groups.where((group) => TextSearch.matches(query, [group.name, group.description])).toList();
   }
 
   void joinGroup(StudyGroup group, User user) {

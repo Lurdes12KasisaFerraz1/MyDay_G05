@@ -50,6 +50,8 @@ class DataService {
 
   void addEntry(Entry entry) => _entries.insert(0, entry);
 
+  void addProject(Project project) => _projects.insert(0, project);
+
   void addMessage(Message message) => _messages.add(message);
 
   String nextMessageId() => 'm${_messages.length + 1}';
@@ -173,32 +175,28 @@ class DataService {
         name: 'Cálculo I',
         coverImage: AppImages.derivatives,
         visibility: EntryVisibility.private,
-        entriesCount: 14,
-        lastActivity: 'hoje',
+        subject: Subject.mathematics,
         description: 'Limites, derivadas e integrais: o que percebi em cada aula e as fichas resolvidas.',
       ),
       Project(
         name: 'App MyDay',
         coverImage: AppImages.developer,
         visibility: EntryVisibility.public,
-        entriesCount: 23,
-        lastActivity: 'ontem',
+        subject: Subject.mobile,
         description: 'Diário do desenvolvimento da app MyDay em Flutter, ecrã a ecrã.',
       ),
       Project(
         name: 'Química – laboratório',
         coverImage: AppImages.chemistryLab,
         visibility: EntryVisibility.friends,
-        entriesCount: 6,
-        lastActivity: 'há 3 dias',
+        subject: Subject.chemistry,
         description: 'Registos das aulas práticas: montagens, observações e resultados.',
       ),
       Project(
         name: 'Bases de Dados',
         coverImage: AppImages.databases,
         visibility: EntryVisibility.friends,
-        entriesCount: 11,
-        lastActivity: 'há 5 dias',
+        subject: Subject.databases,
         description: 'Modelação ER, normalização e SQL para o teste e para o projeto de grupo.',
       ),
     ]);

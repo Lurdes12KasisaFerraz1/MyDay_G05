@@ -9,6 +9,7 @@ import '../models/user.dart';
 import '../services/data_service.dart';
 import '../services/location_service.dart';
 import '../utils/app_images.dart';
+import '../utils/text_search.dart';
 import '../utils/date_formatter.dart';
 
 class DiaryController extends ChangeNotifier {
@@ -98,6 +99,34 @@ class DiaryController extends ChangeNotifier {
 
   List<Entry> entriesForProject(String projectName) {
     return entries.where((entry) => entry.project == projectName).toList();
+  }
+
+  /// Texto curto da última atividade de um projeto: "hoje", "ontem", "há 3 dias".
+  String lastActivityFor(String projectName) {
+    final projectEntries = entriesForProject(projectName);
+    if (projectEntries.isEmpty) return 'sem registos';
+
+    final latest = projectEntries.map((entry) => _dateOnly(entry.createdAt)).reduce((a, b) => a.isAfter(b) ? a : b);
+    // Arredonda as horas para não falhar nos dias de mudança de hora (23 ou 25 horas).
+    final days = (_dateOnly(DateTime.now()).difference(latest).inHours + 12) ~/ 24;
+    return switch (days) {
+      <= 0 => 'hoje',
+      1 => 'ontem',
+      _ => 'há $days dias',
+    };
+  }
+
+  /// Registos cujo título, texto, tags, projeto ou disciplina contêm [query].
+  List<Entry> search(String query) {
+    return entries
+        .where((entry) => TextSearch.matches(query, [
+              entry.title,
+              entry.text,
+              entry.project,
+              entry.subject.label,
+              ...entry.tags,
+            ]))
+        .toList();
   }
 
   Project? projectNamed(String name) {

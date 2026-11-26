@@ -6,9 +6,17 @@ import '../../utils/app_colors.dart';
 import 'tags.dart';
 
 class ProjectCard extends StatelessWidget {
-  const ProjectCard({super.key, required this.project, required this.onTap});
+  const ProjectCard({
+    super.key,
+    required this.project,
+    required this.entriesCount,
+    required this.lastActivity,
+    required this.onTap,
+  });
 
   final Project project;
+  final int entriesCount;
+  final String lastActivity;
   final VoidCallback onTap;
 
   @override
@@ -50,7 +58,7 @@ class ProjectCard extends StatelessWidget {
                   Text(project.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: textTheme.titleMedium),
                   const SizedBox(height: 3),
                   Text(
-                    '${project.entriesCount} registos · ${project.lastActivity}',
+                    '${entriesCount == 1 ? '1 registo' : '$entriesCount registos'} · $lastActivity',
                     style: textTheme.bodySmall,
                   ),
                 ],

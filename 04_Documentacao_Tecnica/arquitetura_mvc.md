@@ -27,9 +27,10 @@ Cada controlador estende `ChangeNotifier` e chama `notifyListeners()` quando o e
 | --- | --- |
 | `AuthController` | login em 2 passos, bloqueio ao fim de 3 tentativas, registo com código, recuperação da palavra-passe, sessão |
 | `DiaryController` | registos de hoje e de ontem, estatísticas da semana, criar registo, localização atual, favoritos e comentários |
-| `ProjectController` | lista de projetos, filtro por visibilidade e grupos de estudo |
+| `ProjectController` | projetos (criar, filtrar, pesquisar) e grupos de estudo (entrar, sair, lembrete) |
 | `CommunityController` | feed escolhido, pesquisa, favoritos e desafio da semana |
 | `MessageController` | conversas, mensagens por ler, enviar e marcar como lidas |
+| `NotificationController` | junta as notificações (mensagens, comentários, lembretes, desafio, sequência) e guarda as lidas |
 | `SettingsController` | permissões de localização e microfone, lembretes |
 
 As operações que podem falhar lançam uma `AppException`; o ecrã apanha-a e decide como a mostrar.

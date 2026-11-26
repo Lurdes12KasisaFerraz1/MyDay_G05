@@ -17,4 +17,7 @@ class AppRoutes {
   static const String chat = '/chat';
   static const String groups = '/groups';
   static const String groupDetail = '/group';
+  static const String newProject = '/new-project';
+  static const String search = '/search';
+  static const String notifications = '/notifications';
 }

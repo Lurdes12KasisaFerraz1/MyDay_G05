@@ -5,14 +5,13 @@ import '../../controllers/settings_controller.dart';
 import '../../models/enums.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_exception.dart';
-import '../../utils/app_images.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/messages.dart';
 import '../../utils/validators.dart';
 import '../widgets/app_background.dart';
 import '../widgets/app_text_field.dart';
-import '../widgets/choice_tabs.dart';
 import '../widgets/gradient_button.dart';
+import '../widgets/photo_picker.dart';
 import '../widgets/round_icon_button.dart';
 
 class NewEntryScreen extends StatefulWidget {
@@ -39,8 +38,10 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
   final _textController = TextEditingController();
   final _tagsController = TextEditingController();
 
-  Subject _subject = Subject.mathematics;
   late String _project = widget.initialProject ?? widget.diaryController.projectNames.first;
+
+  // A disciplina vem do projeto (prj_dis_id), mas pode ser trocada.
+  late Subject _subject = _subjectOf(_project);
   EntryVisibility _visibility = EntryVisibility.private;
   AutovalidateMode _autovalidate = AutovalidateMode.disabled;
   AttachmentType? _media;
@@ -56,6 +57,10 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
     super.dispose();
   }
 
+  Subject _subjectOf(String projectName) {
+    return widget.diaryController.projectNamed(projectName)?.subject ?? Subject.mathematics;
+  }
+
   Future<void> _selectAttachment(AttachmentType type) async {
     switch (type) {
       case AttachmentType.photo:
@@ -69,12 +74,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
   }
 
   Future<void> _choosePhoto() async {
-    final path = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      isScrollControlled: true,
-      builder: (_) => _PhotoPicker(selected: _imagePath),
-    );
+    final path = await showPhotoPicker(context, selected: _imagePath);
     if (path != null) setState(() => _imagePath = path);
   }
 
@@ -197,7 +197,10 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                         project: _project,
                         projects: widget.diaryController.projectNames,
                         onSubjectChanged: (subject) => setState(() => _subject = subject),
-                        onProjectChanged: (project) => setState(() => _project = project),
+                        onProjectChanged: (project) => setState(() {
+                          _project = project;
+                          _subject = _subjectOf(project);
+                        }),
                       ),
                       const SizedBox(height: 14),
                       AppTextField(
@@ -354,71 +357,6 @@ class _PhotoPreview extends StatelessWidget {
             child: RoundIconButton(icon: Icons.close_rounded, tooltip: 'Remover fotografia', onPressed: onRemove),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Folha para escolher a fotografia do registo, organizada por categoria.
-class _PhotoPicker extends StatefulWidget {
-  const _PhotoPicker({this.selected});
-
-  final String? selected;
-
-  @override
-  State<_PhotoPicker> createState() => _PhotoPickerState();
-}
-
-class _PhotoPickerState extends State<_PhotoPicker> {
-  ImageCategory _category = ImageCategory.values.first;
-
-  @override
-  Widget build(BuildContext context) {
-    final images = AppImages.byCategory[_category] ?? const [];
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Escolher fotografia', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 14),
-            ChoiceTabs<ImageCategory>(
-              options: ImageCategory.values,
-              selected: _category,
-              labelOf: (category) => category.label,
-              onSelected: (category) => setState(() => _category = category),
-            ),
-            const SizedBox(height: 14),
-            GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 1.3,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                for (final path in images)
-                  InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () => Navigator.pop(context, path),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: path == widget.selected ? AppColors.primaryLight : Colors.transparent,
-                          width: 2,
-                        ),
-                        image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -2,21 +2,27 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../controllers/diary_controller.dart';
+import '../../controllers/notification_controller.dart';
 import '../../models/entry.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/date_formatter.dart';
-import '../../utils/messages.dart';
 import '../widgets/entry_card.dart';
 import '../widgets/round_icon_button.dart';
 import '../widgets/section_header.dart';
 import '../widgets/streak_card.dart';
 
 class DiaryScreen extends StatelessWidget {
-  const DiaryScreen({super.key, required this.diaryController, required this.authController});
+  const DiaryScreen({
+    super.key,
+    required this.diaryController,
+    required this.authController,
+    required this.notificationController,
+  });
 
   final DiaryController diaryController;
   final AuthController authController;
+  final NotificationController notificationController;
 
   void _openEntry(BuildContext context, Entry entry) {
     Navigator.pushNamed(context, AppRoutes.entryDetail, arguments: entry);
@@ -37,6 +43,7 @@ class DiaryScreen extends StatelessWidget {
             _Header(
               firstName: user?.firstName ?? 'estudante',
               avatarPath: user?.avatarPath,
+              notificationController: notificationController,
             ),
             const SizedBox(height: 18),
             if (user?.isGuest ?? false)
@@ -79,10 +86,11 @@ class DiaryScreen extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.firstName, required this.avatarPath});
+  const _Header({required this.firstName, required this.avatarPath, required this.notificationController});
 
   final String firstName;
   final String? avatarPath;
+  final NotificationController notificationController;
 
   @override
   Widget build(BuildContext context) {
@@ -112,14 +120,18 @@ class _Header extends StatelessWidget {
         RoundIconButton(
           icon: Icons.search_rounded,
           tooltip: 'Pesquisar',
-          onPressed: () => showNotAvailable(context, 'A pesquisa'),
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.search),
         ),
         const SizedBox(width: 8),
-        RoundIconButton(
-          icon: Icons.notifications_none_rounded,
-          tooltip: 'Notificações',
-          showBadge: true,
-          onPressed: () => showNotAvailable(context, 'O ecrã de notificações'),
+        // O ponto azul só aparece quando há notificações por ler.
+        ListenableBuilder(
+          listenable: notificationController,
+          builder: (context, _) => RoundIconButton(
+            icon: Icons.notifications_none_rounded,
+            tooltip: 'Notificações',
+            showBadge: notificationController.unreadCount > 0,
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.notifications),
+          ),
         ),
       ],
     );

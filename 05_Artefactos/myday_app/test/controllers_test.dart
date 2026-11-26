@@ -4,7 +4,16 @@ import 'package:myday_app/controllers/diary_controller.dart';
 import 'package:myday_app/controllers/project_controller.dart';
 import 'package:myday_app/models/enums.dart';
 import 'package:myday_app/services/data_service.dart';
+import 'package:myday_app/services/location_service.dart';
+import 'package:myday_app/services/verification_service.dart';
+import 'package:myday_app/utils/app_exception.dart';
+import 'package:myday_app/utils/app_images.dart';
 import 'package:myday_app/utils/validators.dart';
+
+const _email = 'rodrigo@iade.pt';
+const _password = 'myday2026';
+
+AuthController _newAuth() => AuthController(DataService(), VerificationService());
 
 void main() {
   group('Validators', () {
@@ -13,39 +22,97 @@ void main() {
       expect(Validators.email('ana.lopes@iade.pt'), isNull);
     });
 
-    test('exige palavra-passe com pelo menos 6 caracteres', () {
-      expect(Validators.password('123'), isNotNull);
-      expect(Validators.password('estudar2026'), isNull);
+    test('valida telemóvel e código', () {
+      expect(Validators.phone('912 345 678'), isNull);
+      expect(Validators.phone('12345'), isNotNull);
+      expect(Validators.verificationCode('123456'), isNull);
+      expect(Validators.verificationCode('12a456'), isNotNull);
     });
   });
 
-  group('AuthController', () {
-    test('entra com credenciais válidas', () {
-      final auth = AuthController(DataService());
+  group('Login com 2 fatores', () {
+    test('só inicia sessão depois do código', () {
+      final auth = _newAuth();
 
-      expect(auth.login('rodrigo@iade.pt', 'myday2026'), isNull);
+      auth.startLogin(_email, _password);
+      expect(auth.currentUser, isNull);
+
+      auth.confirmCode(auth.pendingVerification!.demoCode);
       expect(auth.currentUser?.firstName, 'Rodrigo');
     });
 
-    test('não cria duas contas com o mesmo email', () {
-      final auth = AuthController(DataService());
+    test('bloqueia a conta à 3.ª palavra-passe errada', () {
+      final auth = _newAuth();
 
-      final error = auth.register(
-        name: 'Outro',
-        email: 'rodrigo@iade.pt',
+      for (var attempt = 1; attempt <= 2; attempt++) {
+        expect(
+          () => auth.startLogin(_email, 'errada'),
+          throwsA(isA<AppException>().having((e) => e.title, 'title', 'Não foi possível entrar')),
+        );
+      }
+      expect(
+        () => auth.startLogin(_email, 'errada'),
+        throwsA(isA<AppException>().having((e) => e.title, 'title', 'Conta bloqueada')),
+      );
+      // Mesmo com a palavra-passe certa continua bloqueada.
+      expect(() => auth.startLogin(_email, _password), throwsA(isA<AppException>()));
+    });
+
+    test('recuperar a palavra-passe desbloqueia a conta', () {
+      final auth = _newAuth();
+      for (var attempt = 0; attempt < AuthController.maxLoginAttempts; attempt++) {
+        expect(() => auth.startLogin(_email, 'errada'), throwsA(isA<AppException>()));
+      }
+
+      auth.requestPasswordReset(_email);
+      auth.resetPassword(auth.pendingVerification!.demoCode, 'nova2026');
+
+      auth.startLogin(_email, 'nova2026');
+      expect(auth.pendingVerification?.purpose, VerificationPurpose.login);
+    });
+  });
+
+  group('Registo', () {
+    test('a conta só é criada depois de confirmar o código', () {
+      final dataService = DataService();
+      final auth = AuthController(dataService, VerificationService());
+
+      auth.startRegistration(
+        name: 'Marta Silva',
+        email: 'marta@iade.pt',
+        phone: '914 000 111',
         password: 'segredo123',
         course: 'Design · IADE',
+        channel: VerificationChannel.sms,
       );
-      expect(error, isNotNull);
+      expect(dataService.emailExists('marta@iade.pt'), isFalse);
+
+      expect(() => auth.confirmCode('000000'), throwsA(isA<AppException>()));
+      auth.confirmCode(auth.pendingVerification!.demoCode);
+      expect(dataService.emailExists('marta@iade.pt'), isTrue);
+    });
+
+    test('não cria duas contas com o mesmo email', () {
+      expect(
+        () => _newAuth().startRegistration(
+          name: 'Outro',
+          email: _email,
+          phone: '914000111',
+          password: 'segredo123',
+          course: 'Design · IADE',
+          channel: VerificationChannel.email,
+        ),
+        throwsA(isA<AppException>()),
+      );
     });
   });
 
   group('DiaryController', () {
-    test('um novo registo aparece nos registos de hoje', () {
-      final diary = DiaryController(DataService());
+    test('um novo registo sem fotografia usa a imagem da disciplina', () {
+      final diary = DiaryController(DataService(), LocationService());
       final before = diary.todayEntries.length;
 
-      diary.addEntry(
+      final entry = diary.addEntry(
         title: 'Joins em SQL',
         text: 'Junções no WHERE.',
         subject: Subject.databases,
@@ -55,7 +122,7 @@ void main() {
       );
 
       expect(diary.todayEntries.length, before + 1);
-      expect(diary.todayEntries.first.title, 'Joins em SQL');
+      expect(entry.imagePath, AppImages.databases);
     });
   });
 

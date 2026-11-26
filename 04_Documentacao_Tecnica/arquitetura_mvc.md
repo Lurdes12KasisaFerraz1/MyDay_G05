@@ -11,9 +11,13 @@ Classes simples que descrevem os dados, sem lógica de ecrã.
 - `Comment`, `Project`, `StudyGroup`, `Post`.
 - `enums.dart` – `Subject`, `EntryVisibility`, `AttachmentType` e `CommunityFeed`, cada um com a etiqueta que aparece na interface.
 
-## Serviço – `lib/services/data_service.dart`
+## Serviços – `lib/services`
 
-Guarda os dados de exemplo em memória. É o único sítio que os controladores usam para ler e escrever. Quando a app tiver backend, basta substituir esta classe.
+- `DataService` – guarda os dados de exemplo em memória. É o único sítio que os controladores usam para ler e escrever. Quando a app tiver backend, basta substituir esta classe.
+- `VerificationService` – gera os códigos de 6 dígitos (válidos 10 minutos, uso único) e confirma-os.
+- `LocationService` – pede a permissão e lê a posição do GPS com o pacote `geolocator`.
+
+Os erros previstos (palavra-passe errada, conta bloqueada, GPS desligado…) são lançados como `AppException` com título e mensagem, e os ecrãs mostram-nos num popup.
 
 ## Controller – `lib/controllers`
 
@@ -21,13 +25,13 @@ Cada controlador estende `ChangeNotifier` e chama `notifyListeners()` quando o e
 
 | Controlador | Responsabilidade |
 | --- | --- |
-| `AuthController` | entrar, criar conta, terminar sessão e utilizador atual |
-| `DiaryController` | registos de hoje e de ontem, estatísticas da semana, criar registo, favoritos e comentários |
+| `AuthController` | login em 2 passos, bloqueio ao fim de 3 tentativas, registo com código, recuperação da palavra-passe, sessão |
+| `DiaryController` | registos de hoje e de ontem, estatísticas da semana, criar registo, localização atual, favoritos e comentários |
 | `ProjectController` | lista de projetos, filtro por visibilidade e grupos de estudo |
 | `CommunityController` | feed escolhido, pesquisa, favoritos e desafio da semana |
 | `SettingsController` | permissões de localização e microfone, lembretes |
 
-As operações que podem falhar (login e registo) devolvem uma mensagem de erro, ou `null` se correrem bem. Assim o ecrã decide como a mostrar.
+As operações que podem falhar lançam uma `AppException`; o ecrã apanha-a e decide como a mostrar.
 
 ## View – `lib/views`
 
@@ -41,8 +45,10 @@ As cores, o tema e o tipo de letra estão centralizados em `lib/utils/app_colors
 As rotas estão em `lib/utils/app_routes.dart` e são resolvidas em `app.dart` (`onGenerateRoute`).
 
 ```
-Abertura ──► Boas-vindas ──► Criar conta ◄──► Entrar
+Abertura ──► Boas-vindas ──► Criar conta ◄──► Entrar ──► Recuperar palavra-passe
                                    │              │
+                                   ▼              ▼
+                        Código do registo   Código (2.º fator)
                                    └──────┬───────┘
                                           ▼
                     MainScreen (barra inferior)

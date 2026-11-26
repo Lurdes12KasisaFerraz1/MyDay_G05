@@ -116,7 +116,7 @@ class _ConversationTile extends StatelessWidget {
     final now = DateTime.now();
     if (DateFormatter.isSameDay(date, now)) return DateFormatter.time(date);
     if (DateFormatter.isSameDay(date, DateTime(now.year, now.month, now.day - 1))) return 'Ontem';
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+    return DateFormatter.shortDate(date);
   }
 
   @override

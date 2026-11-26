@@ -93,14 +93,16 @@ class ProjectsScreen extends StatelessWidget {
             SectionHeader(
               title: 'Grupos de estudo',
               actionLabel: 'Ver todos',
-              onAction: () => showNotAvailable(context, 'A lista de grupos'),
+              onAction: () => Navigator.pushNamed(context, AppRoutes.groups),
             ),
             const SizedBox(height: 8),
-            for (final group in projectController.groups)
+            for (final group in projectController.groups.take(2)) ...[
               StudyGroupCard(
                 group: group,
-                onTap: () => showNotAvailable(context, 'O detalhe do grupo'),
+                onTap: () => Navigator.pushNamed(context, AppRoutes.groupDetail, arguments: group),
               ),
+              const SizedBox(height: 12),
+            ],
           ],
         );
       },

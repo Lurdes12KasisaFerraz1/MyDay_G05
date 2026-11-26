@@ -8,6 +8,7 @@ import 'controllers/project_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'models/entry.dart';
 import 'models/project.dart';
+import 'models/study_group.dart';
 import 'models/user.dart';
 import 'services/data_service.dart';
 import 'services/location_service.dart';
@@ -18,6 +19,8 @@ import 'views/screens/calendar_screen.dart';
 import 'views/screens/chat_screen.dart';
 import 'views/screens/entry_detail_screen.dart';
 import 'views/screens/forgot_password_screen.dart';
+import 'views/screens/group_detail_screen.dart';
+import 'views/screens/groups_screen.dart';
 import 'views/screens/login_screen.dart';
 import 'views/screens/main_screen.dart';
 import 'views/screens/map_screen.dart';
@@ -99,6 +102,12 @@ class _MyDayAppState extends State<MyDayApp> {
           focusEntry: settings.arguments as Entry?,
         ),
       AppRoutes.calendar => CalendarScreen(diaryController: _diaryController),
+      AppRoutes.groups => GroupsScreen(projectController: _projectController, authController: _authController),
+      AppRoutes.groupDetail => GroupDetailScreen(
+          group: settings.arguments! as StudyGroup,
+          projectController: _projectController,
+          authController: _authController,
+        ),
       AppRoutes.messages => MessagesScreen(messageController: _messageController),
       AppRoutes.chat => ChatScreen(
           contact: settings.arguments! as User,

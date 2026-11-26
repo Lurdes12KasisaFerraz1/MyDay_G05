@@ -232,6 +232,28 @@ void main() {
     });
   });
 
+  group('Grupos de estudo', () {
+    test('entrar e sair de um grupo', () {
+      final dataService = DataService();
+      final projects = ProjectController(dataService);
+      final rodrigo = dataService.findUserByEmail(_email)!;
+      final quimica = projects.groups.firstWhere((group) => group.id == 'g3');
+
+      projects.joinGroup(quimica, rodrigo);
+      expect(quimica.hasMember(rodrigo), isTrue);
+
+      projects.leaveGroup(quimica, rodrigo);
+      expect(quimica.hasMember(rodrigo), isFalse);
+    });
+
+    test('o dono não pode sair do grupo', () {
+      final projects = ProjectController(DataService());
+      final group = projects.groups.first;
+
+      expect(() => projects.leaveGroup(group, group.owner), throwsA(isA<AppException>()));
+    });
+  });
+
   group('ProjectController', () {
     test('filtra os projetos pela visibilidade', () {
       final projects = ProjectController(DataService());

@@ -17,17 +17,3 @@ class Project {
   final String lastActivity;
   final String description;
 }
-
-class StudyGroup {
-  const StudyGroup({
-    required this.name,
-    required this.memberAvatars,
-    required this.membersCount,
-    required this.sharedEntries,
-  });
-
-  final String name;
-  final List<String> memberAvatars;
-  final int membersCount;
-  final int sharedEntries;
-}

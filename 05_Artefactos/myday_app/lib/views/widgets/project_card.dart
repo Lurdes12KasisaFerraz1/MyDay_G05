@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/project.dart';
+import '../../models/study_group.dart';
 import '../../utils/app_colors.dart';
 import 'tags.dart';
 
@@ -87,16 +88,17 @@ class StudyGroupCard extends StatelessWidget {
           child: Row(
             children: [
               SizedBox(
-                width: 38 + 26.0 * group.memberAvatars.length,
+                width: 12 + 26.0 * group.memberAvatars.length + (extraMembers > 0 ? 26 : 0),
                 height: 38,
                 child: Stack(
                   children: [
                     for (var i = 0; i < group.memberAvatars.length; i++)
                       Positioned(left: 26.0 * i, child: _MemberAvatar(imagePath: group.memberAvatars[i])),
-                    Positioned(
-                      left: 26.0 * group.memberAvatars.length,
-                      child: _MemberAvatar(label: '+$extraMembers'),
-                    ),
+                    if (extraMembers > 0)
+                      Positioned(
+                        left: 26.0 * group.memberAvatars.length,
+                        child: _MemberAvatar(label: '+$extraMembers'),
+                      ),
                   ],
                 ),
               ),

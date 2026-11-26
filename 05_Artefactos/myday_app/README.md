@@ -18,6 +18,7 @@ Aplicação móvel em Flutter do projeto MyDay (Grupo G05, IADE). É um diário 
 | Detalhe do projeto | `lib/views/screens/project_detail_screen.dart` |
 | Mapa | `lib/views/screens/map_screen.dart` |
 | Calendário e recompensas | `lib/views/screens/calendar_screen.dart` |
+| Grupos de estudo e detalhe do grupo | `lib/views/screens/groups_screen.dart`, `group_detail_screen.dart` |
 | Mensagens (lista de conversas) | `lib/views/screens/messages_screen.dart` |
 | Chat | `lib/views/screens/chat_screen.dart` |
 | Projetos | `lib/views/screens/projects_screen.dart` |
@@ -42,6 +43,7 @@ Aplicação móvel em Flutter do projeto MyDay (Grupo G05, IADE). É um diário 
 - **Detalhe do projeto:** toca num projeto (ou no chip do projeto num registo) para ver a descrição, os números, as disciplinas e os registos, e criar um registo já associado a esse projeto.
 - **Mapa:** em Diário → *Mapa*, ou *Ver no mapa* num registo. Mostra os registos com posição GPS sobre o OpenStreetMap; tocar num marcador mostra o registo.
 - **Calendário com recompensas:** em Diário → *Calendário*, ou no cartão dos dias seguidos. Mostra o mês com os dias com registo, a sequência atual e a melhor, a barra de progresso até à próxima recompensa e as medalhas (3, 7, 14, 30, 60 e 100 dias seguidos). Tocar num dia mostra os registos desse dia.
+- **Grupos de estudo:** em Projetos → *Ver todos* (os meus grupos e outros grupos) ou tocando num grupo. O detalhe mostra a descrição, o dono, os números, o lembrete do grupo (só o dono o liga/desliga) e os membros com o papel *Dono* ou *Membro*; dá para entrar ou sair do grupo e enviar mensagem a qualquer membro.
 - **Mensagens:** botão de mensagens na Comunidade (com um ponto azul quando há mensagens por ler). Mostra as conversas da mais recente para a mais antiga, com o número de mensagens por ler; o lápis inicia uma conversa nova. No chat as mensagens ficam agrupadas por dia e a última enviada mostra se já foi *Lida*. O convidado é convidado a criar conta.
 - **Código QR do perfil:** o botão pequeno de QR no Perfil mostra o código e permite partilhá-lo (imagem + link) pelas apps do telemóvel.
 - Todos os ecrãs secundários têm botão de voltar; nos separadores, o voltar regressa ao Diário.

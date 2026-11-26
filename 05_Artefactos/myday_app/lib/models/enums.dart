@@ -50,6 +50,15 @@ enum UserRole {
   final String label;
 }
 
+enum GroupRole {
+  owner('Dono'),
+  member('Membro');
+
+  const GroupRole(this.label);
+
+  final String label;
+}
+
 enum VerificationChannel {
   email('email'),
   sms('SMS');

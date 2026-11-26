@@ -15,4 +15,6 @@ class AppRoutes {
   static const String calendar = '/calendar';
   static const String messages = '/messages';
   static const String chat = '/chat';
+  static const String groups = '/groups';
+  static const String groupDetail = '/group';
 }

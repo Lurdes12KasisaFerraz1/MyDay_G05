@@ -4,6 +4,7 @@ import '../models/enums.dart';
 import '../models/message.dart';
 import '../models/post.dart';
 import '../models/project.dart';
+import '../models/study_group.dart';
 import '../models/user.dart';
 import '../utils/app_images.dart';
 
@@ -202,14 +203,7 @@ class DataService {
       ),
     ]);
 
-    _groups.add(
-      const StudyGroup(
-        name: 'Grupo BD 2026',
-        memberAvatars: [AppImages.avatarTiago, AppImages.avatarInes],
-        membersCount: 5,
-        sharedEntries: 12,
-      ),
-    );
+    _groups.addAll(_sampleGroups(today));
 
     _posts.addAll([
       Post(
@@ -309,6 +303,57 @@ class DataService {
       message('m4', tiago, rodrigo, 'Vamos rever SQL amanhã na biblioteca?', const Duration(days: 1, hours: 2)),
       message('m5', rodrigo, tiago, 'Combinado, às 10h.', const Duration(days: 1, hours: 1)),
       message('m6', ines, ana, 'Gostei muito do teu projeto de química!', const Duration(hours: 5)),
+    ];
+  }
+
+  List<StudyGroup> _sampleGroups(DateTime today) {
+    final rodrigo = _users[0];
+    final ana = _users[1];
+    final ines = _users[3];
+    final tiago = _users[4];
+
+    GroupMember member(User user, GroupRole role, int daysAgo) {
+      return GroupMember(user: user, role: role, joinedAt: today.subtract(Duration(days: daysAgo)));
+    }
+
+    return [
+      StudyGroup(
+        id: 'g1',
+        name: 'Grupo BD 2026',
+        description: 'Preparação para o teste de Bases de Dados: modelação ER, normalização e SQL.',
+        createdAt: today.subtract(const Duration(days: 30)),
+        members: [
+          member(tiago, GroupRole.owner, 30),
+          member(ines, GroupRole.member, 28),
+          member(rodrigo, GroupRole.member, 25),
+          member(ana, GroupRole.member, 20),
+        ],
+        sharedEntries: 12,
+        reminder: GroupReminder(title: 'Revisão de SQL', schedule: 'Quintas · 18:00'),
+      ),
+      StudyGroup(
+        id: 'g2',
+        name: 'Cálculo – exame',
+        description: 'Resolver fichas de derivadas e integrais antes do exame de Cálculo I.',
+        createdAt: today.subtract(const Duration(days: 14)),
+        members: [
+          member(ana, GroupRole.owner, 14),
+          member(ines, GroupRole.member, 10),
+        ],
+        sharedEntries: 5,
+        reminder: GroupReminder(title: 'Fichas de derivadas', schedule: 'Segundas · 17:30'),
+      ),
+      StudyGroup(
+        id: 'g3',
+        name: 'Química – laboratório',
+        description: 'Partilha de relatórios e observações das aulas práticas de Química.',
+        createdAt: today.subtract(const Duration(days: 7)),
+        members: [
+          member(ines, GroupRole.owner, 7),
+          member(tiago, GroupRole.member, 5),
+        ],
+        sharedEntries: 3,
+      ),
     ];
   }
 }

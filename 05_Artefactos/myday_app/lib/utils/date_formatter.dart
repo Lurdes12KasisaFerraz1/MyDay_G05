@@ -37,6 +37,11 @@ class DateFormatter {
     return '${date.day} $month ${date.year} · ${time(date)}';
   }
 
+  /// Exemplo: "26/11".
+  static String shortDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+  }
+
   /// Exemplo: "Novembro 2026".
   static String monthYear(DateTime date) {
     final month = _months[date.month - 1];

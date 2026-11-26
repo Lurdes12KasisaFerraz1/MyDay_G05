@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../controllers/auth_controller.dart';
+import '../../models/enums.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_exception.dart';
 import '../../utils/app_images.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/messages.dart';
@@ -27,36 +29,47 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  AutovalidateMode _autovalidate = AutovalidateMode.disabled;
   String _course = _courses.first;
+  VerificationChannel _channel = VerificationChannel.email;
   bool _acceptedTerms = false;
+  bool _showTermsError = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _register() {
-    if (!_formKey.currentState!.validate()) return;
-    if (!_acceptedTerms) {
-      showMessage(context, 'Tens de aceitar os Termos e a Política de Privacidade.');
+    final isValid = _formKey.currentState!.validate();
+    setState(() {
+      _autovalidate = AutovalidateMode.onUserInteraction;
+      _showTermsError = !_acceptedTerms;
+    });
+    if (!isValid || !_acceptedTerms) {
+      showInvalidFormAlert(context);
       return;
     }
 
-    final error = widget.authController.register(
-      name: _nameController.text,
-      email: _emailController.text,
-      password: _passwordController.text,
-      course: _course,
-    );
-    if (error != null) {
-      showMessage(context, error);
-      return;
+    try {
+      widget.authController.startRegistration(
+        name: _nameController.text,
+        email: _emailController.text,
+        phone: _phoneController.text,
+        password: _passwordController.text,
+        course: _course,
+        channel: _channel,
+      );
+      Navigator.pushNamed(context, AppRoutes.verifyCode);
+    } on AppException catch (error) {
+      showErrorAlert(context, error);
     }
-    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
   }
 
   @override
@@ -76,6 +89,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: _autovalidate,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -84,6 +98,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         hint: 'O teu nome',
                         icon: Icons.person_outline_rounded,
                         controller: _nameController,
+                        isRequired: true,
                         validator: Validators.name,
                       ),
                       const SizedBox(height: 12),
@@ -93,7 +108,18 @@ class _SignupScreenState extends State<SignupScreen> {
                         icon: Icons.mail_outline_rounded,
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
+                        isRequired: true,
                         validator: Validators.email,
+                      ),
+                      const SizedBox(height: 12),
+                      AppTextField(
+                        label: 'Telemóvel',
+                        hint: '912 345 678',
+                        icon: Icons.phone_iphone_rounded,
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        isRequired: true,
+                        validator: Validators.phone,
                       ),
                       const SizedBox(height: 12),
                       AppTextField(
@@ -102,6 +128,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         icon: Icons.lock_outline_rounded,
                         controller: _passwordController,
                         isPassword: true,
+                        isRequired: true,
                         validator: Validators.password,
                         onChanged: (_) => setState(() {}),
                       ),
@@ -113,22 +140,45 @@ class _SignupScreenState extends State<SignupScreen> {
                         value: _course,
                         onChanged: (course) => setState(() => _course = course),
                       ),
+                      const SizedBox(height: 12),
+                      _ChannelSelector(
+                        selected: _channel,
+                        onChanged: (channel) => setState(() => _channel = channel),
+                      ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           Checkbox(
                             value: _acceptedTerms,
                             activeColor: AppColors.primary,
-                            onChanged: (value) => setState(() => _acceptedTerms = value ?? false),
+                            side: BorderSide(
+                              color: _showTermsError ? AppColors.errorBorder : AppColors.textSubtle,
+                              width: 1.5,
+                            ),
+                            onChanged: (value) => setState(() {
+                              _acceptedTerms = value ?? false;
+                              _showTermsError = !_acceptedTerms;
+                            }),
                           ),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'Aceito os Termos e a Política de Privacidade.',
-                              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                              'Aceito os Termos e a Política de Privacidade. *',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: _showTermsError ? AppColors.error : AppColors.textSecondary,
+                              ),
                             ),
                           ),
                         ],
                       ),
+                      if (_showTermsError)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 12, bottom: 4),
+                          child: Text(
+                            'Tens de aceitar para criar conta',
+                            style: TextStyle(fontSize: 12, color: AppColors.error),
+                          ),
+                        ),
                       const SizedBox(height: 8),
                       GradientButton(label: 'Criar conta', showArrow: true, onPressed: _register),
                       const SizedBox(height: 8),
@@ -177,6 +227,37 @@ class _HeaderContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Onde o estudante quer receber o código de confirmação.
+class _ChannelSelector extends StatelessWidget {
+  const _ChannelSelector({required this.selected, required this.onChanged});
+
+  final VerificationChannel selected;
+  final ValueChanged<VerificationChannel> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text('Receber código por', style: Theme.of(context).textTheme.labelLarge),
+        const Spacer(),
+        for (final channel in VerificationChannel.values) ...[
+          const SizedBox(width: 8),
+          ChoiceChip(
+            label: Text(channel == VerificationChannel.email ? 'Email' : 'SMS'),
+            selected: channel == selected,
+            showCheckmark: false,
+            onSelected: (_) => onChanged(channel),
+            selectedColor: AppColors.primary,
+            backgroundColor: AppColors.glass,
+            side: const BorderSide(color: AppColors.glassBorder),
+            labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -29,11 +29,10 @@ class DataService {
 
   String get weeklyChallenge => 'Explica um conceito em 60 segundos de vídeo';
 
-  User? findUser(String email, String password) {
+  User? findUserByEmail(String email) {
+    final normalized = email.trim().toLowerCase();
     for (final user in _users) {
-      if (user.email == email.trim().toLowerCase() && user.password == password) {
-        return user;
-      }
+      if (user.email == normalized) return user;
     }
     return null;
   }
@@ -58,6 +57,7 @@ class DataService {
         name: 'Rodrigo Rodrigues',
         email: 'rodrigo@iade.pt',
         password: 'myday2026',
+        phone: '912345678',
         course: 'Eng. Informática · IADE',
         avatarPath: AppImages.avatarRodrigo,
         entriesCount: 86,
@@ -69,6 +69,7 @@ class DataService {
         name: 'Ana Lopes',
         email: 'ana.lopes@iade.pt',
         password: 'myday2026',
+        phone: '913456789',
         course: 'Eng. Informática · IADE',
         avatarPath: AppImages.avatarAna,
         entriesCount: 86,

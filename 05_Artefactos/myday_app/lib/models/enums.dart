@@ -39,3 +39,26 @@ enum CommunityFeed {
 
   final String label;
 }
+
+enum VerificationChannel {
+  email('email'),
+  sms('SMS');
+
+  const VerificationChannel(this.label);
+
+  final String label;
+}
+
+enum VerificationPurpose { signup, login, passwordReset }
+
+enum ImageCategory {
+  mathematics('Matemática'),
+  databases('Bases de Dados'),
+  programming('Programação'),
+  chemistry('Química'),
+  study('Estudo');
+
+  const ImageCategory(this.label);
+
+  final String label;
+}

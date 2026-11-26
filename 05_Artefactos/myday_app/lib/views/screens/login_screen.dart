@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_exception.dart';
 import '../../utils/app_images.dart';
 import '../../utils/app_routes.dart';
 import '../../utils/messages.dart';
@@ -25,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  AutovalidateMode _autovalidate = AutovalidateMode.disabled;
   bool _keepSession = true;
 
   @override
@@ -35,14 +37,19 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login() {
-    if (!_formKey.currentState!.validate()) return;
-
-    final error = widget.authController.login(_emailController.text, _passwordController.text);
-    if (error != null) {
-      showMessage(context, error);
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _autovalidate = AutovalidateMode.onUserInteraction);
+      showInvalidFormAlert(context);
       return;
     }
-    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
+
+    try {
+      widget.authController.startLogin(_emailController.text, _passwordController.text);
+      Navigator.pushNamed(context, AppRoutes.verifyCode);
+    } on AppException catch (error) {
+      _passwordController.clear();
+      showErrorAlert(context, error);
+    }
   }
 
   @override
@@ -62,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: _autovalidate,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -78,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         icon: Icons.mail_outline_rounded,
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
+                        isRequired: true,
                         validator: Validators.email,
                       ),
                       const SizedBox(height: 14),
@@ -87,7 +96,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         icon: Icons.lock_outline_rounded,
                         controller: _passwordController,
                         isPassword: true,
-                        validator: Validators.password,
+                        isRequired: true,
+                        validator: (value) => Validators.requiredField(value, 'Escreve a tua palavra-passe'),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -104,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () => showNotAvailable(context, 'A recuperação da palavra-passe'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
                             child: const Text(
                               'Esqueceste-te?',
                               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.link),

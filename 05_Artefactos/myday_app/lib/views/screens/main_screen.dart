@@ -43,8 +43,21 @@ class _MainScreenState extends State<MainScreen> {
 
   void _openNewEntry() => Navigator.pushNamed(context, AppRoutes.newEntry);
 
+  void _backToDiary() => setState(() => _currentTab = _diaryTab);
+
   @override
   Widget build(BuildContext context) {
+    // O botão "voltar" do sistema regressa primeiro ao Diário antes de sair.
+    return PopScope(
+      canPop: _currentTab == _diaryTab,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _backToDiary();
+      },
+      child: _buildScaffold(),
+    );
+  }
+
+  Widget _buildScaffold() {
     return Scaffold(
       body: AppBackground(
         child: SafeArea(
@@ -56,11 +69,12 @@ class _MainScreenState extends State<MainScreen> {
                 diaryController: widget.diaryController,
                 authController: widget.authController,
               ),
-              ProjectsScreen(projectController: widget.projectController),
-              CommunityScreen(communityController: widget.communityController),
+              ProjectsScreen(projectController: widget.projectController, onBack: _backToDiary),
+              CommunityScreen(communityController: widget.communityController, onBack: _backToDiary),
               ProfileScreen(
                 authController: widget.authController,
                 settingsController: widget.settingsController,
+                onBack: _backToDiary,
               ),
             ],
           ),

@@ -11,9 +11,10 @@ import '../widgets/post_card.dart';
 import '../widgets/round_icon_button.dart';
 
 class CommunityScreen extends StatelessWidget {
-  const CommunityScreen({super.key, required this.communityController});
+  const CommunityScreen({super.key, required this.communityController, required this.onBack});
 
   final CommunityController communityController;
+  final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +28,8 @@ class CommunityScreen extends StatelessWidget {
           children: [
             Row(
               children: [
+                RoundIconButton(icon: Icons.arrow_back_rounded, tooltip: 'Voltar ao Diário', onPressed: onBack),
+                const SizedBox(width: 12),
                 Image.asset(AppImages.logoIcon, height: 30),
                 const SizedBox(width: 10),
                 Expanded(child: Text('Comunidade', style: Theme.of(context).textTheme.headlineMedium)),

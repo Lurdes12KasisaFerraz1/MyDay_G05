@@ -10,10 +10,16 @@ import '../widgets/round_icon_button.dart';
 import '../widgets/section_header.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key, required this.authController, required this.settingsController});
+  const ProfileScreen({
+    super.key,
+    required this.authController,
+    required this.settingsController,
+    required this.onBack,
+  });
 
   final AuthController authController;
   final SettingsController settingsController;
+  final VoidCallback onBack;
 
   void _logout(BuildContext context) {
     authController.logout();
@@ -52,6 +58,11 @@ class ProfileScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: RoundIconButton(icon: Icons.arrow_back_rounded, tooltip: 'Voltar ao Diário', onPressed: onBack),
+        ),
+        const SizedBox(height: 12),
         _ProfileHeader(user: user),
         const SizedBox(height: 16),
         _StatsCard(user: user),

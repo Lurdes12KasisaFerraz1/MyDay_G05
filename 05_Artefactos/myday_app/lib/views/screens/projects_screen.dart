@@ -6,12 +6,14 @@ import '../../utils/app_colors.dart';
 import '../../utils/messages.dart';
 import '../widgets/choice_tabs.dart';
 import '../widgets/project_card.dart';
+import '../widgets/round_icon_button.dart';
 import '../widgets/section_header.dart';
 
 class ProjectsScreen extends StatelessWidget {
-  const ProjectsScreen({super.key, required this.projectController});
+  const ProjectsScreen({super.key, required this.projectController, required this.onBack});
 
   final ProjectController projectController;
+  final VoidCallback onBack;
 
   static const List<EntryVisibility?> _filters = [
     null,
@@ -41,6 +43,8 @@ class ProjectsScreen extends StatelessWidget {
           children: [
             Row(
               children: [
+                RoundIconButton(icon: Icons.arrow_back_rounded, tooltip: 'Voltar ao Diário', onPressed: onBack),
+                const SizedBox(width: 12),
                 Expanded(child: Text('Projetos', style: Theme.of(context).textTheme.headlineMedium)),
                 FilledButton.icon(
                   onPressed: () => showNotAvailable(context, 'A criação de projetos'),

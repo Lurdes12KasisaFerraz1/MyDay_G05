@@ -134,3 +134,4 @@ O estado é gerido com `ChangeNotifier` e `ListenableBuilder`, sem pacotes de ge
 - Tipo de letra Plus Jakarta Sans, licença SIL Open Font License (`assets/fonts/OFL.txt`).
 - Fotografias de templates open source com licença MIT (Themefisher, Creative Tim) e fotografias do grupo.
 - Ícones: Material Icons, incluídos no Flutter.
+- A pasta `web/` já vem com o título **MyDay**, o favicon e os ícones da app (gerados a partir de `assets/icons/logo_icon.png`).
